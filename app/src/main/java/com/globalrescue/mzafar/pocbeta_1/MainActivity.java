@@ -2,7 +2,9 @@ package com.globalrescue.mzafar.pocbeta_1;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -13,7 +15,7 @@ import com.globalrescue.mzafar.pocbeta_1.Utilities.DataUtil;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends Activity implements LangListAdapter.LanguageSelection {
+public class MainActivity extends AppCompatActivity implements LangListAdapter.LanguageSelection {
 
     private static final String TAG = "MainActivity";
 
@@ -25,6 +27,11 @@ public class MainActivity extends Activity implements LangListAdapter.LanguageSe
         setContentView(R.layout.activity_main);
         Log.d(TAG, "onCreate: started.");
 
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
+
+        }else{
+
+        }
         DataUtil dataUtil = new DataUtil(this);
         langList = (List<LanguageListModel>) dataUtil.construcListFromJson(dataUtil.getJsonLangList());
         initRecyclerView();
