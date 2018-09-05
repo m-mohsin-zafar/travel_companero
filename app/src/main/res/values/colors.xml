@@ -7,6 +7,7 @@
     <color name="colorPrimaryDark">#5D4037</color>
     <color name="colorAccent">#FFE57F</color>
     <color name="PrimaryLight">#8D6E63</color>
-    <color name="PrimaryDarker">#4E342E</color>
+    <color name="PrimaryDarker">#3E2723</color>
     <color name="AmberA700">#FFAB00</color>
+    <color name="Gray50">#FAFAFA</color>
 </resources>

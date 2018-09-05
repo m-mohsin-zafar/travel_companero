@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="translator">Translator</string>
+    <string name="image_translator">Image Translator</string>
+    <string name="destination">Destination</string>
+</resources>

@@ -1,4 +1,4 @@
-package com.globalrescue.mzafar.pocbeta_1;
+package com.globalrescue.mzafar.pocbeta_1.adapters;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
@@ -8,9 +8,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.globalrescue.mzafar.pocbeta_1.Models.LanguageListModel;
+import com.globalrescue.mzafar.pocbeta_1.models.LanguageListModel;
+import com.globalrescue.mzafar.pocbeta_1.R;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,15 +18,15 @@ import java.util.List;
 public class LangListAdapter extends RecyclerView.Adapter<LangListAdapter.LangListViewHolder>{
 
     private static final String TAG = LangListAdapter.class.getSimpleName();
-    LanguageSelection languageSelection;
-//    private ArrayList<String> mLangName = new ArrayList<>();
-//    private ArrayList<String> mLangCountry = new ArrayList<>();
+    private LanguageSelectionListener languageSelectionListener;
+
     private List<LanguageListModel> mLangModelList = new ArrayList<>();
     private Context mContext;
 
-    public LangListAdapter(List<LanguageListModel> mLangModelList, Context mContext) {
+    public LangListAdapter(List<LanguageListModel> mLangModelList, Context mContext, LanguageSelectionListener listener) {
         this.mLangModelList = mLangModelList;
         this.mContext = mContext;
+        this.languageSelectionListener = listener;
     }
     /**
      *
@@ -53,8 +53,8 @@ public class LangListAdapter extends RecyclerView.Adapter<LangListAdapter.LangLi
         return viewHolder;
     }
 
-    void setOnLanguageSelection(LanguageSelection languageSelection){
-        this.languageSelection = languageSelection;
+    public void setOnLanguageSelection(LanguageSelectionListener languageSelectionListener){
+        this.languageSelectionListener = languageSelectionListener;
     }
 
     /**
@@ -72,16 +72,7 @@ public class LangListAdapter extends RecyclerView.Adapter<LangListAdapter.LangLi
         Log.d(TAG, "onBindViewHolder Called: " + position);
         holder.langName.setText(mLangModelList.get(position).getmLangName());
         holder.langCountry.setText(mLangModelList.get(position).getmLangCountry());
-        holder.langlistContainer.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(TAG, "onClick -> Clicked on: "+ mLangModelList.get(position).getmLangName());
-                Toast.makeText(mContext, mLangModelList.get(position).getmLangName()+" Selected", Toast.LENGTH_LONG).show();
-                LangListAdapter.this.languageSelection.onLanguageSelected(mLangModelList.get(position));
-                // mContext.startActivity(new Intent(mContext, MainActivity.class));
-
-            }
-        });
+                // mContext.startActivity(new Intent(mContext, DestinationLanguageSelectActivity.class));
     }
 
     /**
@@ -98,7 +89,7 @@ public class LangListAdapter extends RecyclerView.Adapter<LangListAdapter.LangLi
     /**
      * Cache of the children views for a list item.
      */
-    class LangListViewHolder extends RecyclerView.ViewHolder {
+    class LangListViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
 
         //Views that are to be Inserted into ViewHolder
         TextView langName;
@@ -118,10 +109,23 @@ public class LangListAdapter extends RecyclerView.Adapter<LangListAdapter.LangLi
             langName = itemView.findViewById(R.id.tv_lang_name);
             langCountry = itemView.findViewById(R.id.tv_lang_country);
             langlistContainer = itemView.findViewById(R.id.ll_langlist_container);
+
+            itemView.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View v) {
+            int clickedPosition = getAdapterPosition();
+            languageSelectionListener.onLanguageSelected(mLangModelList.get(clickedPosition));
         }
     }
 
-    interface LanguageSelection {
+    /*
+    *   Interface to handle clicks on an Item and delegate control
+    *   to DestinationLanguageSelectActivity via callback methodology.
+    */
+
+    public interface LanguageSelectionListener {
         void onLanguageSelected(LanguageListModel language);
     }
 }

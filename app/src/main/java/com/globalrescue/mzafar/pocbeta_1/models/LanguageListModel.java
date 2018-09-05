@@ -1,6 +1,8 @@
-package com.globalrescue.mzafar.pocbeta_1.Models;
+package com.globalrescue.mzafar.pocbeta_1.models;
 
-public class LanguageListModel {
+import java.io.Serializable;
+
+public class LanguageListModel implements Serializable {
 
     private String mLangName;
     private String mLangCountry;

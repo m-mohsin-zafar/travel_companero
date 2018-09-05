@@ -1,10 +1,10 @@
-package com.globalrescue.mzafar.pocbeta_1.Utilities;
+package com.globalrescue.mzafar.pocbeta_1.utilities;
 
 import android.content.Context;
 import android.content.res.Resources;
 import android.util.Log;
 
-import com.globalrescue.mzafar.pocbeta_1.Models.LanguageListModel;
+import com.globalrescue.mzafar.pocbeta_1.models.LanguageListModel;
 import com.globalrescue.mzafar.pocbeta_1.R;
 
 import org.json.JSONArray;

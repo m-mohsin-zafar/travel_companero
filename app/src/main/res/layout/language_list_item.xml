@@ -5,13 +5,14 @@
     android:id="@+id/ll_langlist_container"
     android:padding="5dp"
     android:background="@color/PrimaryDarker"
-    android:layout_marginBottom="2dp">
+    android:clickable="true"
+    android:focusable="true">
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/tv_lang_country"
-        android:textSize="18sp"
+        android:textSize="20sp"
         android:fontFamily="serif-monospace"
         android:padding="3dp"
         android:layout_marginStart="10dp"
@@ -21,6 +22,7 @@
         android:layout_height="wrap_content"
         android:id="@+id/tv_lang_name"
         android:textSize="16sp"
+        android:textColor="@color/Gray50"
         android:fontFamily="serif-monospace"
         android:padding="3dp"
         android:layout_marginStart="10dp"

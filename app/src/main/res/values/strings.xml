@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">Rescue Buddy</string>
     <string name="select_destination_lang_label">Please Select Your Destination Country</string>
+    <string name="translator">Translator</string>
+    <string name="image_translator">Image Translator</string>
+    <string name="destination">Destination </string>
 </resources>
