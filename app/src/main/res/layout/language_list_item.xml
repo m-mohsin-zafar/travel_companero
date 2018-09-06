@@ -4,7 +4,7 @@
     android:layout_height="wrap_content"
     android:id="@+id/ll_langlist_container"
     android:padding="5dp"
-    android:background="@color/PrimaryDarker"
+    android:background="@color/colorListItems"
     android:clickable="true"
     android:focusable="true">
 
