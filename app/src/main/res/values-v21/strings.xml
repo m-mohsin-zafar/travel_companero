@@ -10,4 +10,6 @@
     <string name="voice_text_translator">Voice / Text Translator</string>
     <string name="cancel">Cancel</string>
     <string name="ok">OK</string>
+    <string name="audio_input_dialog_header">Audio Input</string>
+    <string name="audio_dialog_message">Touch Mic and Speak</string>
 </resources>

@@ -11,4 +11,5 @@
     <color name="AmberA700">#FFAB00</color>
     <color name="Gray50">#FAFAFA</color>
     <color name="colorListItems">#424242</color>
+    <color name="transparent">#00000000</color>
 </resources>

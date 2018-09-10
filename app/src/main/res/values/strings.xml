@@ -13,4 +13,6 @@
     <string name="ok">OK</string>
     <string name="dialog_edit_text_hint">Please Enter Text to get its Translation</string>
     <string name="keyboard_dialog_header">Input Text</string>
+    <string name="audio_input_dialog_header">Audio Input</string>
+    <string name="audio_dialog_message">Touch Mic and Speak</string>
 </resources>
