@@ -4,4 +4,13 @@
     <string name="translator">Voice / Text Translator</string>
     <string name="image_translator">Image Translator</string>
     <string name="destination">Destination - </string>
+    <string name="text_input_native">Text Input (Native)</string>
+    <string name="text_input_foreign">Text Input (Foreign)</string>
+    <string name="audio_input_native">Audio Input (Native)</string>
+    <string name="audio_input_foreign">Audio Input (Foreign)</string>
+    <string name="voice_text_translator">Voice / Text Translator</string>
+    <string name="cancel">Cancel</string>
+    <string name="ok">OK</string>
+    <string name="dialog_edit_text_hint">Please Enter Text to get its Translation</string>
+    <string name="keyboard_dialog_header">Input Text</string>
 </resources>
