@@ -14,15 +14,40 @@ import android.widget.Button;
 import android.widget.ImageButton;
 
 import com.globalrescue.mzafar.pocbeta_1.R;
+import com.globalrescue.mzafar.pocbeta_1.nuance.ASR;
+import com.nuance.speechkit.Audio;
+import com.nuance.speechkit.Session;
+import com.nuance.speechkit.Transaction;
 
-public class AudioInputDialog extends DialogFragment implements View.OnClickListener {
+public class AudioInputDialog extends DialogFragment implements View.OnClickListener, ASR.ChangeListener {
 
     private static final String TAG = "AudioInputDialog";
 
     private Button mCancelButton;
     private ImageButton mOkayButton;
 
-    public onInputAudioListener mOnAudioTextListener;
+    private Audio startEarcon;
+    private Audio stopEarcon;
+    private Audio errorEarcon;
+
+    private Context mContext;
+
+    private ASR nuanceASR;
+
+    private String resultantText;
+
+    public onInputAudioListener mOnTextFromAudioistener;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        mContext = getActivity();
+
+        nuanceASR = new ASR(mContext, this);
+
+        //nuanceASR.registerChangeListener(this);
+    }
 
     @Nullable
     @Override
@@ -45,6 +70,13 @@ public class AudioInputDialog extends DialogFragment implements View.OnClickList
         super.onStart();
     }
 
+    // Another activity comes into the foreground. Let's release the server resources if in used.
+    @Override
+    public void onPause() {
+        nuanceASR.actionOnPause(nuanceASR.getState());
+        super.onPause();
+    }
+
     @Override
     public void onClick(View v) {
 
@@ -57,8 +89,12 @@ public class AudioInputDialog extends DialogFragment implements View.OnClickList
 
             case R.id.btn_audio_ok:
                 Log.d(TAG, "onClick -> Okay ");
-//                String inputText = mInput.getText().toString();
-//                mOnInputTextListener.sendInputText(inputText);
+                if (nuanceASR == null) {
+                    nuanceASR = new ASR(mContext, this);
+                }
+//                nuanceASR.registerChangeListener(this);
+                nuanceASR.toggleReco();
+                mOnTextFromAudioistener.sendTextFromInputAudio(resultantText);
                 getDialog().dismiss();
                 break;
 
@@ -71,14 +107,25 @@ public class AudioInputDialog extends DialogFragment implements View.OnClickList
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-//        try {
-//            mOnInputTextListener = (onInputTextListener) getActivity();
-//        } catch (ClassCastException e) {
-//            Log.d(TAG, "onAttach: ClassCastException: " + e.getMessage());
-//        }
+        try {
+            mOnTextFromAudioistener = (onInputAudioListener) getActivity();
+        } catch (ClassCastException e) {
+            Log.d(TAG, "onAttach: ClassCastException: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public void notifyChanges(String changes) {
+    Log.d(TAG, "notifyOnChanges");
+    }
+
+    @Override
+    public void notifyRecognizedText(String text) {
+        resultantText = text;
     }
 
     public interface onInputAudioListener {
-        void sendInputAudio(String input);
+        void sendTextFromInputAudio(String input);
     }
+
 }

@@ -46,12 +46,15 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
         switch (v.getId()) {
             case R.id.btn_native_audio:
                 Log.d(TAG, "onClick -> NativeAudioButton");
-                AudioInputDialog nAudioInputDialog = new AudioInputDialog();
+                AudioInputDialog naAudioInputDialog = new AudioInputDialog();
                 FragmentManager naFragmentManager = this.getSupportFragmentManager();
-                nAudioInputDialog.show(naFragmentManager, "NativeAudioInputDialog");
+                naAudioInputDialog.show(naFragmentManager, "NativeAudioInputDialog");
                 break;
             case R.id.btn_foreign_audio:
-
+                Log.d(TAG, "onClick -> ForeignAudioButton");
+                AudioInputDialog nfAudioInputDialog = new AudioInputDialog();
+                FragmentManager nfFragmentManager = this.getSupportFragmentManager();
+                nfAudioInputDialog.show(nfFragmentManager, "ForeignAudioInputDialog");
                 break;
             case R.id.btn_native_keyboard:
                 Log.d(TAG, "onClick -> NativeKeyboardButton");
