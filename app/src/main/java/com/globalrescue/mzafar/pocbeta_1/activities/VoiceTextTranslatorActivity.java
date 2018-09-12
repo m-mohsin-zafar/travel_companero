@@ -1,5 +1,6 @@
 package com.globalrescue.mzafar.pocbeta_1.activities;
 
+import android.os.AsyncTask;
 import android.os.Handler;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
@@ -13,6 +14,7 @@ import android.widget.TextView;
 import com.globalrescue.mzafar.pocbeta_1.R;
 import com.globalrescue.mzafar.pocbeta_1.models.LanguageListModel;
 import com.globalrescue.mzafar.pocbeta_1.nuance.Configuration;
+import com.globalrescue.mzafar.pocbeta_1.utilities.NetworkUtils;
 import com.nuance.speechkit.Audio;
 import com.nuance.speechkit.DetectionType;
 import com.nuance.speechkit.Language;
@@ -33,6 +35,9 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
     private Button btnForeignAudio;
     private Button btnNativeText;
     private Button btnForeignText;
+
+    NetworkUtils networkUtils;
+    String recognizedResult;
 
     /*
     ASR Related Attributes - Start
@@ -163,7 +168,7 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
         @Override
         public void onRecognition(Transaction transaction, Recognition recognition) {
             logs.append("\nonRecognition: " + recognition.getText());
-
+            recognizedResult = recognition.getText();
             //We have received a transcription of the users voice from the server.
         }
 
@@ -173,6 +178,11 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
 
             //Notification of a successful transaction.
             setState(State.IDLE);
+            //Default variables for translation
+            String textToBeTranslated = recognizedResult;
+            String languagePair = "en-hi"; //English to French ("<source_language>-<target_language>")
+            //Executing the translation function
+            Translate(textToBeTranslated, languagePair);
         }
 
         @Override
@@ -213,7 +223,7 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
         @Override
         public void run() {
             float level = recoTransaction.getAudioLevel();
-            volumeBar.setProgress((int)level);
+            volumeBar.setProgress((int) level);
             handler.postDelayed(audioPoller, 50);
         }
     };
@@ -318,25 +328,47 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
     @Override
     public void sendTextFromInputAudio(String input) {
         Log.d(TAG, "sendInputTextFromAudio(): input = " + input);
+        logs.append(input);
         //Default variables for translation
         String textToBeTranslated = input;
         String languagePair = "en-hi"; //English to French ("<source_language>-<target_language>")
         //Executing the translation function
-        Translate(textToBeTranslated,languagePair);
+        Translate(textToBeTranslated, languagePair);
     }
 
     //Function for calling executing the Translator Background Task
-    void Translate(String textToBeTranslated,String languagePair){
-        TranslatorBackgroundTask translatorBackgroundTask= new TranslatorBackgroundTask(this);
+    void Translate(String textToBeTranslated, String languagePair) {
+//        TranslatorBackgroundTask translatorBackgroundTask = new TranslatorBackgroundTask(this);
         String translationResult = null; // Returns the translated text as a String
         try {
-            translationResult = translatorBackgroundTask.execute(textToBeTranslated,languagePair).get();
+//            translationResult = translatorBackgroundTask.execute(textToBeTranslated, languagePair).get();
+            translationResult = new TextTranslationTask().execute(textToBeTranslated,languagePair).get();
         } catch (ExecutionException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        Log.d("Translation Result",translationResult);
-        logs.append(translationResult);// Logs the result in Android Monitor
+        Log.d("Translation Result", translationResult);
+//        logs.append(translationResult);// Logs the result in Android Monitor
+    }
+
+    class TextTranslationTask extends AsyncTask<String, Void, String> {
+
+        @Override
+        protected String doInBackground(String... strings) {
+            networkUtils = new NetworkUtils();
+            String Result = networkUtils.TranslateTextFromAudio(strings[0], strings[1]);
+            if (Result != null && !Result.equals("")) {
+                return Result;
+            }
+
+            return "Got Nothing!";
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+            logs.append(s);
+        }
     }
 }

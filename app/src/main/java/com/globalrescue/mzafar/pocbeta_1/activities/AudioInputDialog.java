@@ -205,6 +205,7 @@ public class AudioInputDialog extends DialogFragment implements View.OnClickList
             //Notification of a successful transaction.
             setState(State.IDLE);
             mOnTextFromAudioistener.sendTextFromInputAudio(resultantText);
+            getDialog().dismiss();
         }
 
         @Override

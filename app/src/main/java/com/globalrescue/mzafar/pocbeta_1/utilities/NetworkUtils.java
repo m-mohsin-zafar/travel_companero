@@ -23,6 +23,7 @@ public class NetworkUtils {
             //Set up the translation call URL
             String yandexUrl = BASE_URL + API_KEY
                     + "&text=" + textToBeTranslated + "&lang=" + languagePair;
+            yandexUrl = yandexUrl.replaceAll("\\s","%20");
             URL yandexTranslateURL = new URL(yandexUrl);
 
             //Set Http Conncection, Input Stream, and Buffered Reader
