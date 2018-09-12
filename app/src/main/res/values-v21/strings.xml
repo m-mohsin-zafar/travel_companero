@@ -12,4 +12,10 @@
     <string name="ok">OK</string>
     <string name="audio_input_dialog_header">Audio Input</string>
     <string name="audio_dialog_message">Touch Mic and Speak</string>
+    <string name="recognize">Recognize()</string>
+
+    <string name="listening">Listening..</string>
+    <string name="processing">Processing..</string>
+    <string name="try_again">Try Again</string>
+    <string name="recognition_results">Recognition Results:</string>
 </resources>

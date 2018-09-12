@@ -4,28 +4,34 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:background="@color/transparent">
+    android:background="@color/transparent"
+    android:orientation="vertical">
 
     <TextView
         android:id="@+id/tv_audio_dialog_header"
-        style="@style/TextAppearance.AppCompat.Medium"
+        style="@style/TextAppearance.AppCompat.Title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
+        android:gravity="center"
         android:text="@string/audio_input_dialog_header" />
 
-    <View
-        android:id="@+id/divider"
+    <!--<View-->
+    <!--android:id="@+id/divider"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="1dp"-->
+    <!--android:layout_weight="1"-->
+    <!--android:background="@color/PrimaryLight"-->
+    <!--/>-->
+
+    <ProgressBar
+        android:id="@+id/audio_level_bar"
+        style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_weight="1"
-        android:background="@color/PrimaryLight"
-        />
+        android:layout_height="wrap_content"
+        android:layout_margin="2dp" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -34,14 +40,14 @@
 
         <TextView
             android:id="@+id/tv_audio_dialog_message"
+            style="@style/Base.TextAppearance.AppCompat.Subhead"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="8dp"
-            android:paddingStart="4dp"
-            android:paddingEnd="4dp"
             android:layout_weight="1"
             android:gravity="center"
-            style="@style/Base.TextAppearance.AppCompat.Subhead"
+            android:paddingEnd="4dp"
+            android:paddingStart="4dp"
             android:text="@string/audio_dialog_message" />
 
         <ImageButton
@@ -49,20 +55,46 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="4dp"
+            android:layout_weight="1"
+            android:background="@color/transparent"
             android:padding="4dp"
-            android:layout_weight="1"
-            app:srcCompat="@drawable/ic_mic_black_48dp"
-            android:background="@color/transparent"/>
+            app:srcCompat="@drawable/ic_mic_black_48dp" />
 
-        <Button
-            android:id="@+id/btn_audio_cancel"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:layout_marginTop="8dp"
+            android:orientation="horizontal"
+            android:layout_margin="8dp">
+
+            <Button
+                android:id="@+id/btn_audio_cancel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:text="@string/cancel"
+                style="@style/Base.Widget.AppCompat.Button.Borderless"/>
+
+            <Button
+                android:id="@+id/btn_audio_retry"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:text="@string/try_again" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tv_audio_dialog_results"
+            style="@style/Base.TextAppearance.AppCompat.Subhead"
+            android:textStyle="italic"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
             android:layout_weight="1"
-            android:layout_gravity="center"
-            android:text="@string/cancel" />
+            android:paddingEnd="4dp"
+            android:paddingStart="4dp"
+            android:text="@string/recognition_results" />
 
     </LinearLayout>
 </LinearLayout>
