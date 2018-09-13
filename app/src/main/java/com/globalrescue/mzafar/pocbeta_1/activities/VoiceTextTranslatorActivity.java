@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -16,6 +17,7 @@ import com.globalrescue.mzafar.pocbeta_1.models.LanguageListModel;
 import com.globalrescue.mzafar.pocbeta_1.nuance.Configuration;
 import com.globalrescue.mzafar.pocbeta_1.utilities.NetworkUtils;
 import com.nuance.speechkit.Audio;
+import com.nuance.speechkit.AudioPlayer;
 import com.nuance.speechkit.DetectionType;
 import com.nuance.speechkit.Language;
 import com.nuance.speechkit.Recognition;
@@ -26,7 +28,7 @@ import com.nuance.speechkit.TransactionException;
 
 import java.util.concurrent.ExecutionException;
 
-public class VoiceTextTranslatorActivity extends AppCompatActivity implements View.OnClickListener, TextInputDialog.onInputTextListener, AudioInputDialog.onInputAudioListener {
+public class VoiceTextTranslatorActivity extends AppCompatActivity implements View.OnClickListener, TextInputDialog.onInputTextListener, AudioInputDialog.onInputAudioListener, AudioPlayer.Listener {
 
     private static final String TAG = "VTTranslator";
 
@@ -36,24 +38,22 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
     private Button btnNativeText;
     private Button btnForeignText;
 
+    private TextView logs;
+
+    private ImageButton btnPlayAudio;
+
     NetworkUtils networkUtils;
     String recognizedResult;
+    private String translatedText;
 
     /*
-    ASR Related Attributes - Start
+    TTS Related Attributes - Start
      */
-//    private Audio startEarcon;
-//    private Audio stopEarcon;
-//    private Audio errorEarcon;
-
-    private TextView logs;
-//    private ProgressBar volumeBar;
-
-//    private Session speechSession;
-//    private Transaction recoTransaction;
-//    private State state = State.IDLE;
+    private Session speechSession;
+    private Transaction ttsTransaction;
+    private State state = State.IDLE;
     /*
-    ASR Related Attributes - End
+    TTS Related Attributes - End
      */
 
     @Override
@@ -65,222 +65,166 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
         btnForeignAudio = findViewById(R.id.btn_foreign_audio);
         btnNativeText = findViewById(R.id.btn_native_keyboard);
         btnForeignText = findViewById(R.id.btn_foreign_keyboard);
+        btnPlayAudio = findViewById(R.id.btn_play_audio);
 
         btnNativeAudio.setOnClickListener(this);
         btnForeignAudio.setOnClickListener(this);
         btnNativeText.setOnClickListener(this);
         btnForeignText.setOnClickListener(this);
+        btnPlayAudio.setOnClickListener(this);
 
         Bundle extraBundle = getIntent().getExtras();
         mLanguageModel = (LanguageListModel) extraBundle.getSerializable("LANGUAGE_MODEL");
-
-        /*
-        ASR Related Methods/Properties - Start
-         */
         logs = findViewById(R.id.logs);
-//        volumeBar = findViewById(R.id.volume_bar);
+        /*
+        TTS Related Methods/Properties - Start
+         */
         //Create a session
-//        speechSession = Session.Factory.session(this, Configuration.SERVER_URI, Configuration.APP_KEY);
-//        loadEarcons();
-//        setState(State.IDLE);
-//        /*
-//        ASR Related Methods/Properties - End
-//         */
+        speechSession = Session.Factory.session(this, Configuration.SERVER_URI, Configuration.APP_KEY);
+        speechSession.getAudioPlayer().setListener(this);
+
+        setState(State.IDLE);
+        /*
+        TTS Related Methods/Properties - End
+         */
 
     }
 
     /*
-        ASR Related Methods - Start
+        TTS Related Methods - Start
      */
-//    @Override
-//    protected void onPause() {
-//        switch (state) {
-//            case IDLE:
-//                // Nothing to do since there is no ongoing recognition
-//                break;
-//            case LISTENING:
-//                // End the ongoing recording
-//                stopRecording();
-//                break;
-//            case PROCESSING:
-//                // End the ongoing recording and cancel the server recognition
-//                // This cancel request will generate an internal onError callback even if the server
-//                // returns a successful recognition.
-//                cancel();
-//                break;
-//        }
-//        super.onPause();
-//    }
 
-    /*
-    Reco transactions
-    */
-//    private void toggleReco() {
-//        switch (state) {
-//            case IDLE:
-//                recognize();
-//                break;
-//            case LISTENING:
-//                stopRecording();
-//                break;
-//            case PROCESSING:
-//                cancel();
-//                break;
-//        }
-//    }
+    /* TTS transactions */
+
+    private void toggleTTS() {
+        switch (state) {
+            case IDLE:
+                //If we are not loading TTS from the server, then we should do so.
+                if (ttsTransaction == null) {
+                    //toggleTTS.setText(getResources().getString(R.string.cancel));
+                    synthesize();
+                }
+                //Otherwise lets attempt to cancel that transaction
+                else {
+                    cancel();
+                }
+                break;
+            case PLAYING:
+                speechSession.getAudioPlayer().pause();
+                setState(State.PAUSED);
+                break;
+            case PAUSED:
+                speechSession.getAudioPlayer().play();
+                setState(State.PLAYING);
+                break;
+        }
+    }
 
     /**
-     * Start listening to the user and streaming their voice to the server.
+     * Speak the text that is in the ttsText EditText, using the language in the language EditText.
      */
-//    private void recognize() {
-//        //Setup our Reco transaction options.
-//        Transaction.Options options = new Transaction.Options();
-//        options.setRecognitionType(RecognitionType.DICTATION);
-//        options.setDetection(DetectionType.Long);
-//        options.setLanguage(new Language("eng-USA"));
-//        options.setEarcons(startEarcon, stopEarcon, errorEarcon, null);
-//
-//        //Start listening
-//        recoTransaction = speechSession.recognize(options, recoListener);
-//    }
+    private void synthesize() {
+        //Setup our TTS transaction options.
+        Transaction.Options options = new Transaction.Options();
+        options.setLanguage(new Language("hin-IND"));
+        //options.setVoice(new Voice(Voice.SAMANTHA)); //optionally change the Voice of the speaker, but will use the default if omitted.
 
-//    private Transaction.Listener recoListener = new Transaction.Listener() {
-//        @Override
-//        public void onStartedRecording(Transaction transaction) {
-//            logs.append("\nonStartedRecording");
-//
-//            //We have started recording the users voice.
-//            //We should update our state and start polling their volume.
-//            setState(State.LISTENING);
-//            startAudioLevelPoll();
-//        }
-//
-//        @Override
-//        public void onFinishedRecording(Transaction transaction) {
-//            logs.append("\nonFinishedRecording");
-//
-//            //We have finished recording the users voice.
-//            //We should update our state and stop polling their volume.
-//            setState(State.PROCESSING);
-//            stopAudioLevelPoll();
-//        }
+        //Start a TTS transaction
+        ttsTransaction = speechSession.speakString(getTranslatedText(), options, new Transaction.Listener() {
+            @Override
+            public void onAudio(Transaction transaction, Audio audio) {
+                Log.d(TAG,"\nonAudio");
 
-//        @Override
-//        public void onRecognition(Transaction transaction, Recognition recognition) {
-//            logs.append("\nonRecognition: " + recognition.getText());
-//            recognizedResult = recognition.getText();
-//            //We have received a transcription of the users voice from the server.
-//        }
-//
-//        @Override
-//        public void onSuccess(Transaction transaction, String s) {
-//            logs.append("\nonSuccess");
-//
-//            //Notification of a successful transaction.
-//            setState(State.IDLE);
-//            //Default variables for translation
-//            String textToBeTranslated = recognizedResult;
-//            String languagePair = "en-hi"; //English to French ("<source_language>-<target_language>")
-//            //Executing the translation function
-//            Translate(textToBeTranslated, languagePair);
-//        }
-//
-//        @Override
-//        public void onError(Transaction transaction, String s, TransactionException e) {
-//            logs.append("\nonError: " + e.getMessage() + ". " + s);
-//
-//            //Something went wrong. Check Configuration.java to ensure that your settings are correct.
-//            //The user could also be offline, so be sure to handle this case appropriately.
-//            //We will simply reset to the idle state.
-//            setState(State.IDLE);
-//        }
-//    };
+                //The TTS audio has returned from the server, and has begun auto-playing.
+                ttsTransaction = null;
+//                toggleTTS.setText(getResources().getString(R.string.speak_string));
+            }
+
+            @Override
+            public void onSuccess(Transaction transaction, String s) {
+                Log.d(TAG, "\nonSuccess");
+
+                //Notification of a successful transaction. Nothing to do here.
+            }
+
+            @Override
+            public void onError(Transaction transaction, String s, TransactionException e) {
+                Log.d(TAG,"\nonError: " + e.getMessage() + ". " + s);
+
+                //Something went wrong. Check Configuration.java to ensure that your settings are correct.
+                //The user could also be offline, so be sure to handle this case appropriately.
+
+                ttsTransaction = null;
+            }
+        });
+    }
 
     /**
-     * Stop recording the user
+     * Cancel the TTS transaction.
+     * This will only cancel if we have not received the audio from the server yet.
      */
-//    private void stopRecording() {
-//        recoTransaction.stopRecording();
-//    }
+    private void cancel() {
+        ttsTransaction.cancel();
+    }
 
-    /**
-     * Cancel the Reco transaction.
-     * This will only cancel if we have not received a response from the server yet.
-     */
-//    private void cancel() {
-//        recoTransaction.cancel();
-//        setState(State.IDLE);
-//    }
+    @Override
+    public void onBeginPlaying(AudioPlayer audioPlayer, Audio audio) {
+        Log.d(TAG,"\nonBeginPlaying");
 
-    /* Audio Level Polling */
+        //The TTS Audio will begin playing.
 
-//    private Handler handler = new Handler();
+        setState(State.PLAYING);
+    }
 
-    /**
-     * Every 50 milliseconds we should update the volume meter in our UI.
-     */
-//    private Runnable audioPoller = new Runnable() {
-//        @Override
-//        public void run() {
-//            float level = recoTransaction.getAudioLevel();
-//            volumeBar.setProgress((int) level);
-//            handler.postDelayed(audioPoller, 50);
-//        }
-//    };
+    @Override
+    public void onFinishedPlaying(AudioPlayer audioPlayer, Audio audio) {
+        Log.d(TAG,"\nonFinishedPlaying");
 
-    /**
-     * Start polling the users audio level.
-     */
-//    private void startAudioLevelPoll() {
-//        audioPoller.run();
-//    }
+        //The TTS Audio has finished playing
 
-    /**
-     * Stop polling the users audio level.
-     */
-//    private void stopAudioLevelPoll() {
-//        handler.removeCallbacks(audioPoller);
-//        volumeBar.setProgress(0);
-//    }
+        setState(State.IDLE);
+    }
 
-    /* State Logic: IDLE -> LISTENING -> PROCESSING -> repeat */
+    /* State Logic: IDLE <-> PLAYING <-> PAUSED */
 
-//    private enum State {
-//        IDLE,
-//        LISTENING,
-//        PROCESSING
-//    }
+    private enum State {
+        IDLE,
+        PLAYING,
+        PAUSED
+    }
 
     /**
      * Set the state and update the button text.
      */
-//    private void setState(State newState) {
-//        state = newState;
-//        switch (newState) {
-//            case IDLE:
-//                btnNativeAudio.setText(R.string.recognize);
-//                break;
-//            case LISTENING:
-//                btnNativeAudio.setText(R.string.listening);
-//                break;
-//            case PROCESSING:
-//                btnNativeAudio.setText(R.string.processing);
-//                break;
-//        }
-//    }
-
-    /* Earcons */
-
-//    private void loadEarcons() {
-//        //Load all the earcons from disk
-//        startEarcon = new Audio(this, R.raw.sk_start, Configuration.PCM_FORMAT);
-//        stopEarcon = new Audio(this, R.raw.sk_stop, Configuration.PCM_FORMAT);
-//        errorEarcon = new Audio(this, R.raw.sk_error, Configuration.PCM_FORMAT);
-//    }
+    private void setState(State newState) {
+        state = newState;
+        switch (newState) {
+            case IDLE:
+                // Next possible action is speaking
+//                toggleTTS.setText(getResources().getString(R.string.speak_string));
+                break;
+            case PLAYING:
+                // Next possible action is pausing
+//                toggleTTS.setText(getResources().getString(R.string.pause));
+                break;
+            case PAUSED:
+                // Next possible action is resuming the speech
+//                toggleTTS.setText(getResources().getString(R.string.speak_string));
+                break;
+        }
+    }
 
     /*
-        ASR Related Methods - End
+        TTS Related Methods - End
      */
+
+    public String getTranslatedText() {
+        return translatedText;
+    }
+
+    public void setTranslatedText(String translatedText) {
+        this.translatedText = translatedText;
+    }
 
     @Override
     public void onClick(View v) {
@@ -291,8 +235,6 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
                 AudioInputDialog naAudioInputDialog = new AudioInputDialog();
                 FragmentManager naFragmentManager = this.getSupportFragmentManager();
                 naAudioInputDialog.show(naFragmentManager, "NativeAudioInputDialog");
-                /* Calling an ASR Method */
-//                toggleReco();
                 break;
             case R.id.btn_foreign_audio:
                 Log.d(TAG, "onClick -> ForeignAudioButton");
@@ -312,6 +254,9 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
                 FragmentManager fFragmentManager = this.getSupportFragmentManager();
                 fTextInputDialog.show(fFragmentManager, "ForeignTextInputDialog");
                 break;
+            case R.id.btn_play_audio:
+                toggleTTS();
+                break;
             default:
                 break;
         }
@@ -322,7 +267,7 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
     @Override
     public void sendInputText(String input) {
         Log.d(TAG, "sendInput(): input = " + input);
-        logs.append(input+" = \n");
+        logs.append(input + " = \n");
         //Default variables for translation
         String textToBeTranslated = input;
         String languagePair = "en-hi"; //English to Hindi ("<source_language>-<target_language>")
@@ -333,23 +278,23 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
     @Override
     public void sendTextFromInputAudio(String input) {
         Log.d(TAG, "sendInputTextFromAudio(): input = " + input);
-        logs.append(input+" = \n");
+        logs.append(input + " = \n");
         //Default variables for translation
-        String textToBeTranslated = input;
+        recognizedResult = input;
         String languagePair = "en-hi"; //English to Hindi ("<source_language>-<target_language>")
         //Executing the translation function
-        Translate(textToBeTranslated, languagePair);
+        Translate(recognizedResult, languagePair);
     }
 
     /*
-    * Text to Text Translation - Start
-    * */
+     * Text to Text Translation - Start
+     * */
 
     //Function for calling & executing the Translator Background Task
     void Translate(String textToBeTranslated, String languagePair) {
         String translationResult = null; // Returns the translated text as a String
         try {
-            translationResult = new TextTranslationTask().execute(textToBeTranslated,languagePair).get();
+            translationResult = new TextTranslationTask().execute(textToBeTranslated, languagePair).get();
         } catch (ExecutionException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {
@@ -373,7 +318,11 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
         @Override
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
-            logs.append(s+"\n");
+            setTranslatedText(s);
+            if(!s.equals("Got Nothing!")){
+                btnPlayAudio.setVisibility(View.VISIBLE);
+            }
+            logs.append(s + "\n");
         }
     }
     /*
