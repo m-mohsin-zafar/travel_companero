@@ -6,6 +6,7 @@ import android.util.Log;
 
 import com.globalrescue.mzafar.pocbeta_1.models.LanguageListModel;
 import com.globalrescue.mzafar.pocbeta_1.R;
+import com.google.gson.Gson;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -25,6 +26,9 @@ public class DataUtil {
 
     public DataUtil(Context mContext) {
         this.jsonLangList = JSONResourceReader(mContext.getResources(), LANGLISTRESOURCEID);
+    }
+
+    public DataUtil() {
     }
 
     public String JSONResourceReader(Resources resources, int resourceId) {
@@ -77,5 +81,11 @@ public class DataUtil {
 
     public String getJsonLangList() {
         return jsonLangList;
+    }
+
+    public <T>Object parseJSON (Class<T> tClass, String jsonString){
+        Gson gson = new Gson();
+        T clazz = gson.fromJson(jsonString,tClass);
+        return clazz;
     }
 }

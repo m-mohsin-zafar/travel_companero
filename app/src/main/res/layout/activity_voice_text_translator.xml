@@ -40,11 +40,11 @@
         android:layout_height="0dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
+        android:drawableStart="@drawable/ic_keyboard_black_24dp"
         android:fontFamily="sans-serif-condensed"
         android:text="@string/text_input_native"
         android:textAllCaps="false"
         android:textSize="18sp"
-        android:drawableStart= "@drawable/ic_keyboard_black_24dp"
         app:layout_constraintBottom_toTopOf="@+id/guideline6"
         app:layout_constraintEnd_toStartOf="@+id/guideline5"
         app:layout_constraintStart_toStartOf="parent"
@@ -56,11 +56,11 @@
         android:layout_height="0dp"
         android:layout_marginEnd="8dp"
         android:layout_marginTop="8dp"
+        android:drawableStart="@drawable/ic_keyboard_black_24dp"
         android:fontFamily="sans-serif-condensed"
         android:text="@string/text_input_foreign"
         android:textAllCaps="false"
         android:textSize="18sp"
-        android:drawableStart= "@drawable/ic_keyboard_black_24dp"
         app:layout_constraintBottom_toTopOf="@+id/guideline6"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline5"
@@ -72,11 +72,11 @@
         android:layout_height="0dp"
         android:layout_marginBottom="8dp"
         android:layout_marginStart="8dp"
+        android:drawableStart="@drawable/ic_mic_black_24dp"
         android:fontFamily="sans-serif-condensed"
         android:text="@string/audio_input_native"
         android:textAllCaps="false"
         android:textSize="18sp"
-        android:drawableStart="@drawable/ic_mic_black_24dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/guideline5"
         app:layout_constraintStart_toStartOf="parent"
@@ -88,11 +88,11 @@
         android:layout_height="0dp"
         android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
+        android:drawableStart="@drawable/ic_mic_black_24dp"
         android:fontFamily="sans-serif-condensed"
         android:text="@string/audio_input_foreign"
         android:textAllCaps="false"
         android:textSize="18sp"
-        android:drawableStart="@drawable/ic_mic_black_24dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline5"
@@ -121,31 +121,110 @@
             android:textAppearance="@android:style/TextAppearance.Material.Title" />
     </android.support.v7.widget.CardView>
 
-    <FrameLayout
+    <android.support.constraint.ConstraintLayout
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layout_marginBottom="0dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:id="@+id/translator_output_container"
         app:layout_constraintBottom_toTopOf="@+id/guideline3"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/guideline7">
+        app:layout_constraintTop_toTopOf="@+id/guideline7"
+        app:layout_constraintVertical_bias="1.0">
 
-        <ProgressBar
-            android:id="@+id/volume_bar"
-            style="?android:attr/progressBarStyleHorizontal"
-            android:layout_width="match_parent"
-            android:layout_height="5dp" />
-
-        <TextView
-            android:id="@+id/logs"
-            android:layout_width="match_parent"
+        <android.support.constraint.Guideline
+            android:id="@+id/guideline4"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text=""
-            android:padding="4dp"
-            android:layout_margin="4dp"/>
-    </FrameLayout>
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent=".5" />
+
+        <android.support.v7.widget.CardView
+            android:id="@+id/cardView2"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            app:cardBackgroundColor="@color/BGrayO80"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp"
+            app:layout_constraintEnd_toStartOf="@+id/guideline4"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TextView
+                android:id="@+id/textView3"
+                style="@style/TextAppearance.AppCompat.Subhead"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:padding="6dp"
+                android:text="@string/translation_results"
+                android:textSize="16sp" />
+
+        </android.support.v7.widget.CardView>
+
+        <android.support.v7.widget.CardView
+            android:id="@+id/cardView3"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginTop="2dp"
+            app:cardBackgroundColor="@color/PrimaryDarker"
+            app:cardCornerRadius="12dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/cardView2">
+
+            <ScrollView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <TextView
+                    android:id="@+id/logs"
+                    style="@style/TextAppearance.AppCompat.Medium"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="4dp"
+                    android:padding="4dp"
+                    android:text="" />
+            </ScrollView>
+
+        </android.support.v7.widget.CardView>
+
+        <ImageButton
+            android:id="@+id/btn_play_audio"
+            android:layout_width="0dp"
+            android:layout_height="32dp"
+            android:layout_marginEnd="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:background="@color/transparent"
+            app:srcCompat="@drawable/ic_play_circle_outline_black_32dp" />
+
+    </android.support.constraint.ConstraintLayout>
+
+    <!--<FrameLayout-->
+    <!--android:layout_width="0dp"-->
+    <!--android:layout_height="0dp"-->
+    <!--android:layout_marginEnd="8dp"-->
+    <!--android:layout_marginStart="8dp"-->
+    <!--android:layout_marginTop="8dp"-->
+    <!--android:id="@+id/translator_output_container"-->
+    <!--app:layout_constraintBottom_toTopOf="@+id/guideline3"-->
+    <!--app:layout_constraintEnd_toEndOf="parent"-->
+    <!--app:layout_constraintStart_toStartOf="parent"-->
+    <!--app:layout_constraintTop_toTopOf="@+id/guideline7">-->
+
+    <!--<ProgressBar-->
+    <!--android:id="@+id/volume_bar"-->
+    <!--style="?android:attr/progressBarStyleHorizontal"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="5dp" />-->
+
+
+    <!--</FrameLayout>-->
 
 </android.support.constraint.ConstraintLayout>

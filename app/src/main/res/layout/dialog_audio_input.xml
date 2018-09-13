@@ -36,7 +36,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:layout_margin="4dp">
 
         <TextView
             android:id="@+id/tv_audio_dialog_message"
@@ -63,7 +64,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
+            android:orientation="vertical"
             android:layout_margin="8dp">
 
             <Button
@@ -73,28 +74,29 @@
                 android:layout_gravity="center"
                 android:layout_weight="1"
                 android:text="@string/cancel"
-                style="@style/Base.Widget.AppCompat.Button.Borderless"/>
+                android:background="@color/BGrayO80" />
+            <!--style="@style/Base.Widget.AppCompat.Button.Borderless"-->
 
-            <Button
-                android:id="@+id/btn_audio_retry"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_weight="1"
-                android:text="@string/try_again" />
+            <!--<Button-->
+                <!--android:id="@+id/btn_audio_retry"-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:layout_gravity="center"-->
+                <!--android:layout_weight="1"-->
+                <!--android:text="@string/try_again" />-->
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/tv_audio_dialog_results"
-            style="@style/Base.TextAppearance.AppCompat.Subhead"
-            android:textStyle="italic"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="8dp"
-            android:layout_weight="1"
-            android:paddingEnd="4dp"
-            android:paddingStart="4dp"
-            android:text="@string/recognition_results" />
+        <!--<TextView-->
+            <!--android:id="@+id/tv_audio_dialog_results"-->
+            <!--style="@style/Base.TextAppearance.AppCompat.Subhead"-->
+            <!--android:textStyle="italic"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_margin="8dp"-->
+            <!--android:layout_weight="1"-->
+            <!--android:paddingEnd="4dp"-->
+            <!--android:paddingStart="4dp"-->
+            <!--android:text="@string/recognition_results" />-->
 
     </LinearLayout>
 </LinearLayout>
