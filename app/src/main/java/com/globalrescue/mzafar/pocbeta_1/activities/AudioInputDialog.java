@@ -19,6 +19,7 @@ import android.widget.TextView;
 import com.globalrescue.mzafar.pocbeta_1.R;
 import com.globalrescue.mzafar.pocbeta_1.nuance.ASR;
 import com.globalrescue.mzafar.pocbeta_1.nuance.Configuration;
+import com.globalrescue.mzafar.pocbeta_1.utilities.DataUtil;
 import com.nuance.speechkit.Audio;
 import com.nuance.speechkit.DetectionType;
 import com.nuance.speechkit.Language;
@@ -28,7 +29,9 @@ import com.nuance.speechkit.Session;
 import com.nuance.speechkit.Transaction;
 import com.nuance.speechkit.TransactionException;
 
-public class AudioInputDialog extends DialogFragment implements View.OnClickListener, ASR.ChangeListener {
+import java.util.List;
+
+public class AudioInputDialog extends DialogFragment implements View.OnClickListener, ASR.ChangeListener{
 
     private static final String TAG = "AudioInputDialog";
 
@@ -57,6 +60,9 @@ public class AudioInputDialog extends DialogFragment implements View.OnClickList
         Nuance ASR API Methods/Properties - End
     */
 
+    private String nuanceCode;
+
+
     private String resultantText;
 
     public onInputAudioListener mOnTextFromAudioistener;
@@ -66,6 +72,7 @@ public class AudioInputDialog extends DialogFragment implements View.OnClickList
         super.onCreate(savedInstanceState);
 
         mContext = getActivity();
+        nuanceCode = getArguments().getString("NUANCE_CODE");
 
 //        nuanceASR = new ASR(mContext, this);
     }
@@ -157,7 +164,7 @@ public class AudioInputDialog extends DialogFragment implements View.OnClickList
         Transaction.Options options = new Transaction.Options();
         options.setRecognitionType(RecognitionType.DICTATION);
         options.setDetection(DetectionType.Long);
-        options.setLanguage(new Language("eng-USA"));
+        options.setLanguage(new Language(nuanceCode));
         options.setEarcons(startEarcon, stopEarcon, errorEarcon, null);
 
 //        if(progressiveResuts.isChecked()) {
@@ -265,7 +272,6 @@ public class AudioInputDialog extends DialogFragment implements View.OnClickList
         mAudioLevelBar.setProgress(0);
     }
 
-
     /* State Logic: IDLE -> LISTENING -> PROCESSING -> repeat */
     private enum State {
         IDLE,
@@ -353,6 +359,7 @@ public class AudioInputDialog extends DialogFragment implements View.OnClickList
     public void notifyRecognizedText(String text) {
         resultantText = text;
     }
+
 
     public interface onInputAudioListener {
         void sendTextFromInputAudio(String input);

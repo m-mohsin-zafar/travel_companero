@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal" android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:id="@+id/ll_langlist_container"
+    android:padding="5dp"
+    android:background="@color/colorListItems"
+    android:clickable="true"
+    android:focusable="true"
+    android:weightSum="5">
+
+    <ImageView
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/iv_flag"
+        android:layout_weight="1"
+        android:layout_marginStart="8dp"/>
+
+    <TextView
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/tv_lang_country"
+        android:textSize="20sp"
+        android:fontFamily="serif-monospace"
+        android:padding="3dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginEnd="8dp"
+        android:layout_weight="4"
+        android:gravity="center_vertical"
+        android:layout_gravity="center_vertical"
+        />
+    <!--<TextView-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:id="@+id/tv_lang_name"-->
+        <!--android:textSize="16sp"-->
+        <!--android:textColor="@color/Gray50"-->
+        <!--android:fontFamily="serif-monospace"-->
+        <!--android:padding="3dp"-->
+        <!--android:layout_marginStart="10dp"-->
+        <!--/>-->
+</LinearLayout>

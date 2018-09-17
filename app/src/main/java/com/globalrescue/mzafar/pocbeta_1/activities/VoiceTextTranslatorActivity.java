@@ -1,7 +1,6 @@
 package com.globalrescue.mzafar.pocbeta_1.activities;
 
 import android.os.AsyncTask;
-import android.os.Handler;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -9,30 +8,34 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.globalrescue.mzafar.pocbeta_1.R;
-import com.globalrescue.mzafar.pocbeta_1.models.LanguageListModel;
+import com.globalrescue.mzafar.pocbeta_1.models.CountryModel;
+import com.globalrescue.mzafar.pocbeta_1.models.LanguageModel;
 import com.globalrescue.mzafar.pocbeta_1.nuance.Configuration;
+import com.globalrescue.mzafar.pocbeta_1.utilities.DataUtil;
 import com.globalrescue.mzafar.pocbeta_1.utilities.NetworkUtils;
 import com.nuance.speechkit.Audio;
 import com.nuance.speechkit.AudioPlayer;
-import com.nuance.speechkit.DetectionType;
 import com.nuance.speechkit.Language;
-import com.nuance.speechkit.Recognition;
-import com.nuance.speechkit.RecognitionType;
 import com.nuance.speechkit.Session;
 import com.nuance.speechkit.Transaction;
 import com.nuance.speechkit.TransactionException;
 
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-public class VoiceTextTranslatorActivity extends AppCompatActivity implements View.OnClickListener, TextInputDialog.onInputTextListener, AudioInputDialog.onInputAudioListener, AudioPlayer.Listener {
+public class VoiceTextTranslatorActivity extends AppCompatActivity implements View.OnClickListener, TextInputDialog.onInputTextListener, AudioInputDialog.onInputAudioListener, AudioPlayer.Listener, DataUtil.FirebaseDataListner {
 
     private static final String TAG = "VTTranslator";
 
-    private LanguageListModel mLanguageModel;
+    private CountryModel mCountryModel;
+    private LanguageModel mNativeLanguageModel;
+    private LanguageModel mForeignLanguageModel;
+    private String NativeToForeignYandexCode;
+    private String ForeignToNativeYandexCode;
+
     private Button btnNativeAudio;
     private Button btnForeignAudio;
     private Button btnNativeText;
@@ -56,6 +59,23 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
     TTS Related Attributes - End
      */
 
+    DataUtil.FirebaseDataListner NativeLangModelListner = new DataUtil.FirebaseDataListner() {
+        @Override
+        public void onResultNotification(Object tClass) {
+
+        }
+
+        @Override
+        public void onResultListNotification(List<?> classList) {
+
+        }
+
+        @Override
+        public void onLanguageRequest(Object Native, Object Foreign, Boolean isNative) {
+
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -74,7 +94,14 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
         btnPlayAudio.setOnClickListener(this);
 
         Bundle extraBundle = getIntent().getExtras();
-        mLanguageModel = (LanguageListModel) extraBundle.getSerializable("LANGUAGE_MODEL");
+        mCountryModel = (CountryModel) extraBundle.getSerializable("COUNTRY_MODEL");
+
+        DataUtil dataUtil = new DataUtil(this,this);
+
+        // TODO: 9/17/2018 Make Hardcoded Native Language Input to generic...
+        dataUtil.getLanguagenCode(dataUtil.getFirebaseDBRefernce("languages"),"USA",true);
+        dataUtil.getLanguagenCode(dataUtil.getFirebaseDBRefernce("languages"),mCountryModel.getCountry(),false);
+
         logs = findViewById(R.id.logs);
         /*
         TTS Related Methods/Properties - Start
@@ -234,12 +261,23 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
                 Log.d(TAG, "onClick -> NativeAudioButton");
                 AudioInputDialog naAudioInputDialog = new AudioInputDialog();
                 FragmentManager naFragmentManager = this.getSupportFragmentManager();
+                Bundle args = new Bundle();
+                args.putString("NUANCE_CODE", mNativeLanguageModel.getNuanceCode());
+                // TODO: 9/17/2018 Make this native country as a generic input
+
+                naAudioInputDialog.setArguments(args);
+
                 naAudioInputDialog.show(naFragmentManager, "NativeAudioInputDialog");
                 break;
             case R.id.btn_foreign_audio:
                 Log.d(TAG, "onClick -> ForeignAudioButton");
                 AudioInputDialog nfAudioInputDialog = new AudioInputDialog();
                 FragmentManager nfFragmentManager = this.getSupportFragmentManager();
+                Bundle fargs = new Bundle();
+                fargs.putString("NUANCE_CODE", mForeignLanguageModel.getNuanceCode());
+
+                nfAudioInputDialog.setArguments(fargs);
+
                 nfAudioInputDialog.show(nfFragmentManager, "ForeignAudioInputDialog");
                 break;
             case R.id.btn_native_keyboard:
@@ -329,4 +367,26 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
      * Text to Text Translation - End
      * */
 
+    @Override
+    public void onResultNotification(Object tClass) {
+
+    }
+
+    @Override
+    public void onResultListNotification(List<?> classList) {
+
+    }
+
+    @Override
+    public void onLanguageRequest(Object Native, Object Foreign, Boolean isNative) {
+        if(isNative){
+            mNativeLanguageModel = (LanguageModel) Native;
+            NativeToForeignYandexCode += mNativeLanguageModel.getYandexCode();
+        }else{
+            mForeignLanguageModel = (LanguageModel) Foreign;
+            NativeToForeignYandexCode += "-"+mForeignLanguageModel.getYandexCode();
+        }
+        DataUtil util = new DataUtil();
+        ForeignToNativeYandexCode = util.getReverseCode(NativeToForeignYandexCode);
+    }
 }

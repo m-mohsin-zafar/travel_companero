@@ -6,18 +6,20 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.globalrescue.mzafar.pocbeta_1.R;
+import com.globalrescue.mzafar.pocbeta_1.models.CountryModel;
 import com.globalrescue.mzafar.pocbeta_1.models.LanguageListModel;
 
 public class HomeActivity extends AppCompatActivity implements View.OnClickListener {
 
     private TextView mDestCountryTextView;
-    private TextView mDestLanguageTextView;
-    private LanguageListModel mLanguageModel;
-    private String mSelectedLanguage;
+    private ImageView mCountryFlag;
     private Button mTranslatorBtn;
+
+    private CountryModel mCountryModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,18 +27,17 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_home);
 
         mDestCountryTextView = findViewById(R.id.tv_dest_country);
-        mDestLanguageTextView = findViewById(R.id.tv_dest_lang);
         mTranslatorBtn = findViewById(R.id.btn_translator);
+        mCountryFlag = findViewById(R.id.iv_flag_selected);
 
         mTranslatorBtn.setOnClickListener(this);
 
         Bundle extraBundle = getIntent().getExtras();
-        mLanguageModel = (LanguageListModel) extraBundle.getSerializable("LANGUAGE_MODEL");
-        mSelectedLanguage = mLanguageModel.getmLangName();
+        mCountryModel = (CountryModel) extraBundle.getSerializable("COUNTRY_MODEL");
 
-        String formattedLanguageText = "(" + mSelectedLanguage + ")";
-        mDestCountryTextView.setText(mLanguageModel.getmLangCountry());
-        mDestLanguageTextView.setText(formattedLanguageText);
+        int flagId = this.getResources().getIdentifier("com.globalrescue.mzafar.pocbeta_1:drawable/"+mCountryModel.getFlagURL(),null,null);
+        mDestCountryTextView.setText(mCountryModel.getCountry());
+        mCountryFlag.setImageResource(flagId);
 
     }
 
@@ -46,7 +47,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             Context context = HomeActivity.this;
             Class destinationActivity = VoiceTextTranslatorActivity.class;
             Intent intent = new Intent(context, destinationActivity);
-            intent.putExtra("LANGUAGE_MODEL",mLanguageModel);
+            intent.putExtra("COUNTRY_MODEL",mCountryModel);
             startActivity(intent);
         }
     }

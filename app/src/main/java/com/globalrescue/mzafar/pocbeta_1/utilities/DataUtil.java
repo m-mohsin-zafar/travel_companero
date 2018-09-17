@@ -2,10 +2,19 @@ package com.globalrescue.mzafar.pocbeta_1.utilities;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
+import com.globalrescue.mzafar.pocbeta_1.models.CountryModel;
 import com.globalrescue.mzafar.pocbeta_1.models.LanguageListModel;
 import com.globalrescue.mzafar.pocbeta_1.R;
+import com.globalrescue.mzafar.pocbeta_1.models.LanguageModel;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
 import com.google.gson.Gson;
 
 import org.json.JSONArray;
@@ -24,9 +33,20 @@ public class DataUtil {
 
     private String jsonLangList;
 
-    public DataUtil(Context mContext) {
+    //Access FireBase DB
+    private DatabaseReference mDB;
+    private static final String fRootPrefix = "PoC_travel_db/";
+
+    private FirebaseDataListner dataListner;
+
+    public DataUtil(Context mContext, FirebaseDataListner dataListner) {
         this.jsonLangList = JSONResourceReader(mContext.getResources(), LANGLISTRESOURCEID);
+        this.dataListner = dataListner;
     }
+
+//    public DataUtil(FirebaseDataListner dataListner){
+//        this.dataListner = dataListner;
+//    }
 
     public DataUtil() {
     }
@@ -52,6 +72,7 @@ public class DataUtil {
         }
         return json;
     }
+
     public List<?> construcListFromJson(String jsonString) {
         Log.d(TAG, "In Construct List Method");
         try {
@@ -83,9 +104,76 @@ public class DataUtil {
         return jsonLangList;
     }
 
-    public <T>Object parseJSON (Class<T> tClass, String jsonString){
+    public <T> Object parseJSON(Class<T> tClass, String jsonString) {
         Gson gson = new Gson();
-        T clazz = gson.fromJson(jsonString,tClass);
+        T clazz = gson.fromJson(jsonString, tClass);
         return clazz;
+    }
+
+    public DatabaseReference getFirebaseDBRefernce(String refernceFor) {
+        if (mDB == null) {
+            mDB = FirebaseDatabase.getInstance().getReference(fRootPrefix+refernceFor);
+        } else {
+            mDB = FirebaseDatabase.getInstance().getReference(fRootPrefix+refernceFor);
+        }
+        return mDB;
+    }
+
+    public void getListOfCountries(final DatabaseReference databaseReference) {
+
+        mDB.orderByChild("country").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                CountryModel countryModel = null;
+                List<CountryModel> countryModels = new ArrayList<>();
+                Log.d(TAG, "onDataChange: Getting value: " + dataSnapshot.getValue());
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    countryModel = snapshot.getValue(CountryModel.class);
+                    countryModels.add(countryModel);
+                }
+                dataListner.onResultListNotification(countryModels);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Log.d(TAG, "onCancelled: Not Getting Anything...");
+            }
+        });
+
+    }
+
+    public void getLanguagenCode(final DatabaseReference databaseReference, String lang_country, final boolean isNativeLangRequest) {
+        mDB.orderByChild("lang_country").equalTo("Saudi Arabia")
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        Log.i(TAG, "onDataChange: Getting value" + dataSnapshot.getValue());
+                        LanguageModel languageModel = null;
+                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                            languageModel = snapshot.getValue(LanguageModel.class);
+                        }
+                        if(isNativeLangRequest){
+                            dataListner.onLanguageRequest(languageModel,null,true);
+                        }else{
+                            dataListner.onLanguageRequest(null,languageModel,false);
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+                        Log.i(TAG, "onDataCancelled: Got an error!!!");
+                    }
+                });
+    }
+
+    public String getReverseCode(String input){
+        String[] parts = input.split("-");
+        return parts[1] + "-" + parts[0];
+    }
+
+    public interface FirebaseDataListner {
+        void onResultNotification(Object tClass);
+        void onResultListNotification(List<?> classList);
+        void onLanguageRequest(Object Native, Object Foreign, Boolean isNative);
     }
 }

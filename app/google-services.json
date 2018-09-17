@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "708371468076",
+    "firebase_url": "https://poc-travel-1536738324067.firebaseio.com",
+    "project_id": "poc-travel-1536738324067",
+    "storage_bucket": "poc-travel-1536738324067.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:708371468076:android:5e86bd991a52f89b",
+        "android_client_info": {
+          "package_name": "com.globalrescue.mzafar.pocbeta_1"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "708371468076-ge1585vfqr9j55v80h8s838rj18r9hf6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCbE77SB34Rv_X0akBcGOh4iomKjQy-MCc"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

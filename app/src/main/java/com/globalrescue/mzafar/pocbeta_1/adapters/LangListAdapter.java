@@ -6,10 +6,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.globalrescue.mzafar.pocbeta_1.models.LanguageListModel;
+import com.globalrescue.mzafar.pocbeta_1.models.CountryModel;
 import com.globalrescue.mzafar.pocbeta_1.R;
 
 import java.util.ArrayList;
@@ -18,15 +19,15 @@ import java.util.List;
 public class LangListAdapter extends RecyclerView.Adapter<LangListAdapter.LangListViewHolder>{
 
     private static final String TAG = LangListAdapter.class.getSimpleName();
-    private LanguageSelectionListener languageSelectionListener;
+    private CountrySelectionListener countrySelectionListener;
 
-    private List<LanguageListModel> mLangModelList = new ArrayList<>();
+    private List<CountryModel> countryList = new ArrayList<>();
     private Context mContext;
 
-    public LangListAdapter(List<LanguageListModel> mLangModelList, Context mContext, LanguageSelectionListener listener) {
-        this.mLangModelList = mLangModelList;
+    public LangListAdapter(List<CountryModel> countryList, Context mContext, CountrySelectionListener listener) {
+        this.countryList = countryList;
         this.mContext = mContext;
-        this.languageSelectionListener = listener;
+        this.countrySelectionListener = listener;
     }
     /**
      *
@@ -43,7 +44,7 @@ public class LangListAdapter extends RecyclerView.Adapter<LangListAdapter.LangLi
     @Override
     public LangListViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
         Context context = viewGroup.getContext();
-        int layoutIdForListItem = R.layout.language_list_item;
+        int layoutIdForListItem = R.layout.country_list_item;
         LayoutInflater inflater = LayoutInflater.from(context);
         boolean shouldAttachToParentImmediately = false;
 
@@ -53,8 +54,8 @@ public class LangListAdapter extends RecyclerView.Adapter<LangListAdapter.LangLi
         return viewHolder;
     }
 
-    public void setOnLanguageSelection(LanguageSelectionListener languageSelectionListener){
-        this.languageSelectionListener = languageSelectionListener;
+    public void setOnCountrySelection(CountrySelectionListener countrySelectionListener){
+        this.countrySelectionListener = countrySelectionListener;
     }
 
     /**
@@ -70,9 +71,10 @@ public class LangListAdapter extends RecyclerView.Adapter<LangListAdapter.LangLi
     @Override
     public void onBindViewHolder(LangListViewHolder holder, final int position) {
         Log.d(TAG, "onBindViewHolder Called: " + position);
-        holder.langName.setText(mLangModelList.get(position).getmLangName());
-        holder.langCountry.setText(mLangModelList.get(position).getmLangCountry());
-                // mContext.startActivity(new Intent(mContext, DestinationLanguageSelectActivity.class));
+        holder.countryName.setText(countryList.get(position).getCountry());
+        String flagResource = countryList.get(position).getFlagURL();
+        int flagId = mContext.getResources().getIdentifier("com.globalrescue.mzafar.pocbeta_1:drawable/"+flagResource,null,null);
+        holder.countryFlag.setImageResource(flagId);
     }
 
     /**
@@ -83,7 +85,7 @@ public class LangListAdapter extends RecyclerView.Adapter<LangListAdapter.LangLi
      */
     @Override
     public int getItemCount() {
-        return mLangModelList.size();
+        return countryList.size();
     }
 
     /**
@@ -92,8 +94,8 @@ public class LangListAdapter extends RecyclerView.Adapter<LangListAdapter.LangLi
     class LangListViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
 
         //Views that are to be Inserted into ViewHolder
-        TextView langName;
-        TextView langCountry;
+        TextView countryName;
+        ImageView countryFlag;
         LinearLayout langlistContainer;
 
         /**
@@ -106,8 +108,8 @@ public class LangListAdapter extends RecyclerView.Adapter<LangListAdapter.LangLi
         public LangListViewHolder(View itemView) {
             super(itemView);
 
-            langName = itemView.findViewById(R.id.tv_lang_name);
-            langCountry = itemView.findViewById(R.id.tv_lang_country);
+            countryName = itemView.findViewById(R.id.tv_lang_country);
+            countryFlag = itemView.findViewById(R.id.iv_flag);
             langlistContainer = itemView.findViewById(R.id.ll_langlist_container);
 
             itemView.setOnClickListener(this);
@@ -116,7 +118,7 @@ public class LangListAdapter extends RecyclerView.Adapter<LangListAdapter.LangLi
         @Override
         public void onClick(View v) {
             int clickedPosition = getAdapterPosition();
-            languageSelectionListener.onLanguageSelected(mLangModelList.get(clickedPosition));
+            countrySelectionListener.onCountrySelected(countryList.get(clickedPosition));
         }
     }
 
@@ -125,7 +127,7 @@ public class LangListAdapter extends RecyclerView.Adapter<LangListAdapter.LangLi
     *   to DestinationLanguageSelectActivity via callback methodology.
     */
 
-    public interface LanguageSelectionListener {
-        void onLanguageSelected(LanguageListModel language);
+    public interface CountrySelectionListener {
+        void onCountrySelected(CountryModel countryModel);
     }
 }
