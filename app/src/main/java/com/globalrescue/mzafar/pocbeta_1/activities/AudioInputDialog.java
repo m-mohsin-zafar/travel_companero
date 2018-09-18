@@ -3,6 +3,7 @@ package com.globalrescue.mzafar.pocbeta_1.activities;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
@@ -29,6 +30,7 @@ import com.nuance.speechkit.Session;
 import com.nuance.speechkit.Transaction;
 import com.nuance.speechkit.TransactionException;
 
+import java.io.Serializable;
 import java.util.List;
 
 public class AudioInputDialog extends DialogFragment implements View.OnClickListener, ASR.ChangeListener{
@@ -61,11 +63,8 @@ public class AudioInputDialog extends DialogFragment implements View.OnClickList
     */
 
     private String nuanceCode;
-
-
     private String resultantText;
-
-    public onInputAudioListener mOnTextFromAudioistener;
+    private onInputAudioListener mOnTextFromAudioistener;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -73,6 +72,8 @@ public class AudioInputDialog extends DialogFragment implements View.OnClickList
 
         mContext = getActivity();
         nuanceCode = getArguments().getString("NUANCE_CODE");
+
+        mOnTextFromAudioistener = (onInputAudioListener) getArguments().getSerializable("AUDIO_LISTENER");
 
 //        nuanceASR = new ASR(mContext, this);
     }
@@ -344,7 +345,7 @@ public class AudioInputDialog extends DialogFragment implements View.OnClickList
     public void onAttach(Context context) {
         super.onAttach(context);
         try {
-            mOnTextFromAudioistener = (onInputAudioListener) getActivity();
+//            mOnTextFromAudioistener = (onInputAudioListener) getActivity();
         } catch (ClassCastException e) {
             Log.d(TAG, "onAttach: ClassCastException: " + e.getMessage());
         }
@@ -361,7 +362,7 @@ public class AudioInputDialog extends DialogFragment implements View.OnClickList
     }
 
 
-    public interface onInputAudioListener {
+    public interface onInputAudioListener extends Serializable{
         void sendTextFromInputAudio(String input);
     }
 

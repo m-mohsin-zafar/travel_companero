@@ -26,7 +26,7 @@ import com.nuance.speechkit.TransactionException;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-public class VoiceTextTranslatorActivity extends AppCompatActivity implements View.OnClickListener, TextInputDialog.onInputTextListener, AudioInputDialog.onInputAudioListener, AudioPlayer.Listener, DataUtil.FirebaseDataListner {
+public class VoiceTextTranslatorActivity extends AppCompatActivity implements View.OnClickListener, TextInputDialog.onInputTextListener, AudioPlayer.Listener, DataUtil.FirebaseDataListner {
 
     private static final String TAG = "VTTranslator";
 
@@ -59,6 +59,9 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
     TTS Related Attributes - End
      */
 
+    //Default Constructor Instance for DataUtil Class
+    private DataUtil dataUtilDefault;
+
     DataUtil.FirebaseDataListner NativeLangModelListner = new DataUtil.FirebaseDataListner() {
         @Override
         public void onResultNotification(Object tClass) {
@@ -76,11 +79,42 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
         @Override
         public void onResultNotification(Object tClass) {
             mForeignLanguageModel = (LanguageModel) tClass;
+
+            //Setting up Yandex Codes for Text to Text Translation
+            dataUtilDefault = new DataUtil();
+            NativeToForeignYandexCode = mNativeLanguageModel.getYandexCode() + "-" + mForeignLanguageModel.getYandexCode();
+            ForeignToNativeYandexCode = dataUtilDefault.getReverseCode(NativeToForeignYandexCode);
         }
 
         @Override
         public void onResultListNotification(List<?> classList) {
 
+        }
+    };
+
+    AudioInputDialog.onInputAudioListener NativeAudioInputListner = new AudioInputDialog.onInputAudioListener() {
+        @Override
+        public void sendTextFromInputAudio(String input) {
+            Log.d(TAG, "sendInputTextFromAudio(): input = " + input);
+            logs.append(input + " = \n");
+            //Default variables for translation
+            recognizedResult = input;
+            String languagePair = NativeToForeignYandexCode; //("<source_language>-<target_language>")
+            //Executing the translation function
+            Translate(recognizedResult, languagePair);
+        }
+    };
+
+    AudioInputDialog.onInputAudioListener ForeignAudioInputListner = new AudioInputDialog.onInputAudioListener() {
+        @Override
+        public void sendTextFromInputAudio(String input) {
+            Log.d(TAG, "sendInputTextFromAudio(): input = " + input);
+            logs.append(input + " = \n");
+            //Default variables for translation
+            recognizedResult = input;
+            String languagePair = ForeignToNativeYandexCode; //("<source_language>-<target_language>")
+            //Executing the translation function
+            Translate(recognizedResult, languagePair);
         }
     };
 
@@ -104,7 +138,7 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
         Bundle extraBundle = getIntent().getExtras();
         mCountryModel = (CountryModel) extraBundle.getSerializable("COUNTRY_MODEL");
 
-        DataUtil dataUtil = new DataUtil(this,this);
+        DataUtil dataUtil = new DataUtil(this, this);
 
         // TODO: 9/17/2018 Make Hardcoded Native Language Input to generic...
         dataUtil.getLanguagenCode(dataUtil.getFirebaseDBRefernce("languages"), "USA", NativeLangModelListner);
@@ -123,6 +157,14 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
         TTS Related Methods/Properties - End
          */
 
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+//        dataUtilDefault = new DataUtil();
+//        NativeToForeignYandexCode = mNativeLanguageModel.getYandexCode() + "-" + mForeignLanguageModel.getYandexCode();
+//        ForeignToNativeYandexCode = dataUtilDefault.getReverseCode(NativeToForeignYandexCode);
     }
 
     /*
@@ -168,7 +210,7 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
         ttsTransaction = speechSession.speakString(getTranslatedText(), options, new Transaction.Listener() {
             @Override
             public void onAudio(Transaction transaction, Audio audio) {
-                Log.d(TAG,"\nonAudio");
+                Log.d(TAG, "\nonAudio");
 
                 //The TTS audio has returned from the server, and has begun auto-playing.
                 ttsTransaction = null;
@@ -184,7 +226,7 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
 
             @Override
             public void onError(Transaction transaction, String s, TransactionException e) {
-                Log.d(TAG,"\nonError: " + e.getMessage() + ". " + s);
+                Log.d(TAG, "\nonError: " + e.getMessage() + ". " + s);
 
                 //Something went wrong. Check Configuration.java to ensure that your settings are correct.
                 //The user could also be offline, so be sure to handle this case appropriately.
@@ -204,7 +246,7 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
 
     @Override
     public void onBeginPlaying(AudioPlayer audioPlayer, Audio audio) {
-        Log.d(TAG,"\nonBeginPlaying");
+        Log.d(TAG, "\nonBeginPlaying");
 
         //The TTS Audio will begin playing.
 
@@ -213,7 +255,7 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
 
     @Override
     public void onFinishedPlaying(AudioPlayer audioPlayer, Audio audio) {
-        Log.d(TAG,"\nonFinishedPlaying");
+        Log.d(TAG, "\nonFinishedPlaying");
 
         //The TTS Audio has finished playing
 
@@ -271,6 +313,7 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
                 FragmentManager naFragmentManager = this.getSupportFragmentManager();
                 Bundle args = new Bundle();
                 args.putString("NUANCE_CODE", mNativeLanguageModel.getNuanceCode());
+                args.putSerializable("AUDIO_LISTENER", NativeAudioInputListner);
                 // TODO: 9/17/2018 Make this native country as a generic input
 
                 naAudioInputDialog.setArguments(args);
@@ -283,6 +326,7 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
                 FragmentManager nfFragmentManager = this.getSupportFragmentManager();
                 Bundle fargs = new Bundle();
                 fargs.putString("NUANCE_CODE", mForeignLanguageModel.getNuanceCode());
+                fargs.putSerializable("AUDIO_LISTENER", ForeignAudioInputListner);
 
                 nfAudioInputDialog.setArguments(fargs);
 
@@ -321,16 +365,16 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
         Translate(textToBeTranslated, languagePair);
     }
 
-    @Override
-    public void sendTextFromInputAudio(String input) {
-        Log.d(TAG, "sendInputTextFromAudio(): input = " + input);
-        logs.append(input + " = \n");
-        //Default variables for translation
-        recognizedResult = input;
-        String languagePair = "en-hi"; //English to Hindi ("<source_language>-<target_language>")
-        //Executing the translation function
-        Translate(recognizedResult, languagePair);
-    }
+//    @Override
+//    public void sendTextFromInputAudio(String input) {
+//        Log.d(TAG, "sendInputTextFromAudio(): input = " + input);
+//        logs.append(input + " = \n");
+//        //Default variables for translation
+//        recognizedResult = input;
+//        String languagePair = "en-hi"; //English to Hindi ("<source_language>-<target_language>")
+//        //Executing the translation function
+//        Translate(recognizedResult, languagePair);
+//    }
 
     /*
      * Text to Text Translation - Start
@@ -365,7 +409,7 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
             setTranslatedText(s);
-            if(!s.equals("Got Nothing!")){
+            if (!s.equals("Got Nothing!")) {
                 btnPlayAudio.setVisibility(View.VISIBLE);
             }
             logs.append(s + "\n");
