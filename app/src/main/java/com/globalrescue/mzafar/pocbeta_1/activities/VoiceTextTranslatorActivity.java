@@ -26,7 +26,7 @@ import com.nuance.speechkit.TransactionException;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-public class VoiceTextTranslatorActivity extends AppCompatActivity implements View.OnClickListener, TextInputDialog.onInputTextListener, AudioPlayer.Listener, DataUtil.FirebaseDataListner {
+public class VoiceTextTranslatorActivity extends AppCompatActivity implements View.OnClickListener, AudioPlayer.Listener {
 
     private static final String TAG = "VTTranslator";
 
@@ -176,7 +176,7 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
         Bundle extraBundle = getIntent().getExtras();
         mCountryModel = (CountryModel) extraBundle.getSerializable("COUNTRY_MODEL");
 
-        DataUtil dataUtil = new DataUtil(this, this);
+        DataUtil dataUtil = new DataUtil();
 
         // TODO: 9/17/2018 Make Hardcoded Native Language Input to generic...
         dataUtil.getLanguagenCode(dataUtil.getFirebaseDBRefernce("languages"), "USA", NativeLangModelListner);
@@ -200,9 +200,6 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
     @Override
     protected void onStart() {
         super.onStart();
-//        dataUtilDefault = new DataUtil();
-//        NativeToForeignYandexCode = mNativeLanguageModel.getYandexCode() + "-" + mForeignLanguageModel.getYandexCode();
-//        ForeignToNativeYandexCode = dataUtilDefault.getReverseCode(NativeToForeignYandexCode);
     }
 
     /*
@@ -405,28 +402,6 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
 
     }
 
-    @Override
-    public void sendInputText(String input) {
-//        Log.d(TAG, "sendInput(): input = " + input);
-//        logs.append(input + " = \n");
-//        //Default variables for translation
-//        String textToBeTranslated = input;
-//        String languagePair = "en-hi"; //English to Hindi ("<source_language>-<target_language>")
-//        //Executing the translation function
-//        Translate(textToBeTranslated, languagePair);
-    }
-
-//    @Override
-//    public void sendTextFromInputAudio(String input) {
-//        Log.d(TAG, "sendInputTextFromAudio(): input = " + input);
-//        logs.append(input + " = \n");
-//        //Default variables for translation
-//        recognizedResult = input;
-//        String languagePair = "en-hi"; //English to Hindi ("<source_language>-<target_language>")
-//        //Executing the translation function
-//        Translate(recognizedResult, languagePair);
-//    }
-
     /*
      * Text to Text Translation - Start
      * */
@@ -444,6 +419,7 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
         Log.d("Translation Result", translationResult);
     }
 
+    //Task Translation Async Task Handler
     class TextTranslationTask extends AsyncTask<String, Void, String> {
 
         @Override
@@ -470,14 +446,5 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
      * Text to Text Translation - End
      * */
 
-    @Override
-    public void onResultNotification(Object tClass) {
-
-    }
-
-    @Override
-    public void onResultListNotification(List<?> classList) {
-
-    }
 
 }

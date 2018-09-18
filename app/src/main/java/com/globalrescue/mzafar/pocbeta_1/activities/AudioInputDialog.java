@@ -39,14 +39,10 @@ public class AudioInputDialog extends DialogFragment implements View.OnClickList
 
     private Button mCancelButton;
     private ImageButton mOkayButton;
-//    private Button mTryAgainButton;
     private ProgressBar mAudioLevelBar;
     private TextView mStatusTextView;
-//    private TextView mlogs;
 
     private Context mContext;
-
-//    private ASR nuanceASR;
 
     /*
         Nuance ASR API Methods/Properties - Start
@@ -75,7 +71,6 @@ public class AudioInputDialog extends DialogFragment implements View.OnClickList
 
         mOnTextFromAudioistener = (onInputAudioListener) getArguments().getSerializable("AUDIO_LISTENER");
 
-//        nuanceASR = new ASR(mContext, this);
     }
 
     @Nullable
@@ -86,14 +81,11 @@ public class AudioInputDialog extends DialogFragment implements View.OnClickList
 
         mCancelButton = view.findViewById(R.id.btn_audio_cancel);
         mOkayButton = view.findViewById(R.id.btn_audio_ok);
-//        mTryAgainButton = view.findViewById(R.id.btn_audio_retry);
         mAudioLevelBar = view.findViewById(R.id.audio_level_bar);
         mStatusTextView = view.findViewById(R.id.tv_audio_dialog_message);
-//        mlogs = view.findViewById(R.id.tv_audio_dialog_results);
 
         mCancelButton.setOnClickListener(this);
         mOkayButton.setOnClickListener(this);
-//        mTryAgainButton.setOnClickListener(this);
 
         return view;
     }
@@ -119,7 +111,6 @@ public class AudioInputDialog extends DialogFragment implements View.OnClickList
     // Another activity comes into the foreground. Let's release the server resources if in used.
     @Override
     public void onPause() {
-//        nuanceASR.actionOnPause(nuanceASR.getState());
         switch (state) {
             case IDLE:
                 // Nothing to do since there is no ongoing recognition
@@ -168,10 +159,6 @@ public class AudioInputDialog extends DialogFragment implements View.OnClickList
         options.setLanguage(new Language(nuanceCode));
         options.setEarcons(startEarcon, stopEarcon, errorEarcon, null);
 
-//        if(progressiveResuts.isChecked()) {
-//            options.setResultDeliveryType(ResultDeliveryType.PROGRESSIVE);
-//        }
-
         //Start listening
         recoTransaction = speechSession.recognize(options, recoListener);
     }
@@ -180,7 +167,6 @@ public class AudioInputDialog extends DialogFragment implements View.OnClickList
         @Override
         public void onStartedRecording(Transaction transaction) {
             Log.d(TAG, "onStartedRecording");
-//            mlogs.append("\nonStartedRecording");
             //We have started recording the users voice.
             //We should update our state and start polling their volume.
             setState(State.LISTENING);
@@ -190,7 +176,6 @@ public class AudioInputDialog extends DialogFragment implements View.OnClickList
         @Override
         public void onFinishedRecording(Transaction transaction) {
             Log.d(TAG, "onFinishedRecording");
-//            mlogs.append("\nonFinishedRecording");
             //We have finished recording the users voice.
             //We should update our state and stop polling their volume.
             setState(State.PROCESSING);
@@ -201,14 +186,12 @@ public class AudioInputDialog extends DialogFragment implements View.OnClickList
         public void onRecognition(Transaction transaction, Recognition recognition) {
             resultantText = recognition.getText();
             Log.d(TAG, "onRecognition: " + resultantText);
-//            mlogs.append("\nonRecognition: " + resultantText);
             //We have received a transcription of the users voice from the server.
         }
 
         @Override
         public void onSuccess(Transaction transaction, String s) {
             Log.d(TAG, "onSuccess");
-//            mlogs.append("\nonSuccess");
             //Notification of a successful transaction.
             setState(State.IDLE);
             mOnTextFromAudioistener.sendTextFromInputAudio(resultantText);
@@ -218,7 +201,6 @@ public class AudioInputDialog extends DialogFragment implements View.OnClickList
         @Override
         public void onError(Transaction transaction, String s, TransactionException e) {
             Log.d(TAG, "onError: " + e.getMessage() + ". " + s);
-//            mlogs.append("\nonError: " + e.getMessage() + ". " + s);
             //Something went wrong. Check Configuration.java to ensure that your settings are correct.
             //The user could also be offline, so be sure to handle this case appropriately.
             //We will simply reset to the idle state.
@@ -322,19 +304,8 @@ public class AudioInputDialog extends DialogFragment implements View.OnClickList
 
             case R.id.btn_audio_ok:
                 Log.d(TAG, "onClick -> Okay ");
-//                if (nuanceASR == null) {
-//                    nuanceASR = new ASR(mContext, this);
-//                }
-//                nuanceASR.registerChangeListener(this);
                 toggleReco();
-//                mOnTextFromAudioistener.sendTextFromInputAudio(resultantText);
-//                getDialog().dismiss();
                 break;
-//            case R.id.btn_audio_retry:
-//                Log.d(TAG, "onClick -> Retry ");
-//                mlogs.setText(R.string.recognition_results);
-//                toggleReco();
-//                break;
             default:
                 getDialog().dismiss();
                 break;
@@ -344,11 +315,6 @@ public class AudioInputDialog extends DialogFragment implements View.OnClickList
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        try {
-//            mOnTextFromAudioistener = (onInputAudioListener) getActivity();
-        } catch (ClassCastException e) {
-            Log.d(TAG, "onAttach: ClassCastException: " + e.getMessage());
-        }
     }
 
     @Override

@@ -15,7 +15,6 @@ import android.widget.Toast;
 
 import com.globalrescue.mzafar.pocbeta_1.adapters.LangListAdapter;
 import com.globalrescue.mzafar.pocbeta_1.models.CountryModel;
-import com.globalrescue.mzafar.pocbeta_1.models.LanguageListModel;
 import com.globalrescue.mzafar.pocbeta_1.R;
 import com.globalrescue.mzafar.pocbeta_1.utilities.DataUtil;
 
@@ -29,7 +28,6 @@ public class DestinationLanguageSelectActivity extends AppCompatActivity impleme
 
     ProgressBar mLoading;
 
-    private List<LanguageListModel> langList;
     private List<CountryModel> countryList;
     private RecyclerView recyclerView;
 
@@ -53,10 +51,8 @@ public class DestinationLanguageSelectActivity extends AppCompatActivity impleme
 
         }
 
-        DataUtil dataUtil = new DataUtil(this, this);
-//        dataUtil.getLanguagenCode("Saudi Arabia");
+        DataUtil dataUtil = new DataUtil(this);
         dataUtil.getListOfCountries(dataUtil.getFirebaseDBRefernce("countries"));
-        langList = (List<LanguageListModel>) dataUtil.construcListFromJson(dataUtil.getJsonLangList());
     }
 
     private void initRecyclerView() {
@@ -86,12 +82,6 @@ public class DestinationLanguageSelectActivity extends AppCompatActivity impleme
         Class destinationActivity = HomeActivity.class;
         Intent intent = new Intent(context, destinationActivity);
         intent.putExtra("COUNTRY_MODEL",country);
-//        try {
-//            this.wait(1000);
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
-        mToast.cancel();
         startActivity(intent);
     }
 

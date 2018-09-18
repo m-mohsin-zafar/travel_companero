@@ -81,11 +81,6 @@ public class TextInputDialog extends DialogFragment implements View.OnClickListe
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        try {
-//            mOnInputTextListener = (onInputTextListener) getActivity();
-        }catch (ClassCastException e){
-            Log.d(TAG,"onAttach: ClassCastException: "+e.getMessage());
-        }
     }
 
     public interface onInputTextListener extends Serializable{

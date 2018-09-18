@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Rescue Buddy</string>
+    <string name="app_name">Travel Compañero</string>
     <string name="select_destination_lang_label">Please Select Your Destination Country</string>
     <string name="translator">Voice / Text Translator</string>
     <string name="image_translator">Image Translator</string>

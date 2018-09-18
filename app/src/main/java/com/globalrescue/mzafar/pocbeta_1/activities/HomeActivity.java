@@ -8,16 +8,17 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.globalrescue.mzafar.pocbeta_1.R;
 import com.globalrescue.mzafar.pocbeta_1.models.CountryModel;
-import com.globalrescue.mzafar.pocbeta_1.models.LanguageListModel;
 
 public class HomeActivity extends AppCompatActivity implements View.OnClickListener {
 
     private TextView mDestCountryTextView;
     private ImageView mCountryFlag;
     private Button mTranslatorBtn;
+    private Button mImageTranslationBtn;
 
     private CountryModel mCountryModel;
 
@@ -29,8 +30,10 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         mDestCountryTextView = findViewById(R.id.tv_dest_country);
         mTranslatorBtn = findViewById(R.id.btn_translator);
         mCountryFlag = findViewById(R.id.iv_flag_selected);
+        mImageTranslationBtn = findViewById(R.id.btn_image_translator);
 
         mTranslatorBtn.setOnClickListener(this);
+        mImageTranslationBtn.setOnClickListener(this);
 
         Bundle extraBundle = getIntent().getExtras();
         mCountryModel = (CountryModel) extraBundle.getSerializable("COUNTRY_MODEL");
@@ -49,6 +52,9 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             Intent intent = new Intent(context, destinationActivity);
             intent.putExtra("COUNTRY_MODEL",mCountryModel);
             startActivity(intent);
+        }
+        else if (v == mImageTranslationBtn){
+            Toast.makeText(this, "This feature will be available in next release", Toast.LENGTH_SHORT).show();
         }
     }
 }
