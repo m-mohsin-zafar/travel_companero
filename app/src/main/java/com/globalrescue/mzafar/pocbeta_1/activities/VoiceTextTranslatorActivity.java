@@ -62,7 +62,7 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
     DataUtil.FirebaseDataListner NativeLangModelListner = new DataUtil.FirebaseDataListner() {
         @Override
         public void onResultNotification(Object tClass) {
-
+            mNativeLanguageModel = (LanguageModel) tClass;
         }
 
         @Override
@@ -70,11 +70,19 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
 
         }
 
+    };
+
+    DataUtil.FirebaseDataListner ForeignLangModelListner = new DataUtil.FirebaseDataListner() {
         @Override
-        public void onLanguageRequest(Object Native, Object Foreign, Boolean isNative) {
+        public void onResultNotification(Object tClass) {
+            mForeignLanguageModel = (LanguageModel) tClass;
+        }
+
+        @Override
+        public void onResultListNotification(List<?> classList) {
 
         }
-    }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,8 +107,8 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
         DataUtil dataUtil = new DataUtil(this,this);
 
         // TODO: 9/17/2018 Make Hardcoded Native Language Input to generic...
-        dataUtil.getLanguagenCode(dataUtil.getFirebaseDBRefernce("languages"),"USA",true);
-        dataUtil.getLanguagenCode(dataUtil.getFirebaseDBRefernce("languages"),mCountryModel.getCountry(),false);
+        dataUtil.getLanguagenCode(dataUtil.getFirebaseDBRefernce("languages"), "USA", NativeLangModelListner);
+        dataUtil.getLanguagenCode(dataUtil.getFirebaseDBRefernce("languages"), mCountryModel.getCountry(), ForeignLangModelListner);
 
         logs = findViewById(R.id.logs);
         /*
@@ -377,16 +385,4 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
 
     }
 
-    @Override
-    public void onLanguageRequest(Object Native, Object Foreign, Boolean isNative) {
-        if(isNative){
-            mNativeLanguageModel = (LanguageModel) Native;
-            NativeToForeignYandexCode += mNativeLanguageModel.getYandexCode();
-        }else{
-            mForeignLanguageModel = (LanguageModel) Foreign;
-            NativeToForeignYandexCode += "-"+mForeignLanguageModel.getYandexCode();
-        }
-        DataUtil util = new DataUtil();
-        ForeignToNativeYandexCode = util.getReverseCode(NativeToForeignYandexCode);
-    }
 }

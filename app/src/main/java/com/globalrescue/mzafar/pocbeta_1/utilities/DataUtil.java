@@ -142,8 +142,8 @@ public class DataUtil {
 
     }
 
-    public void getLanguagenCode(final DatabaseReference databaseReference, String lang_country, final boolean isNativeLangRequest) {
-        mDB.orderByChild("lang_country").equalTo("Saudi Arabia")
+    public void getLanguagenCode(final DatabaseReference databaseReference, String lang_country, final FirebaseDataListner dataListner) {
+        mDB.orderByChild("languageCountry").equalTo(lang_country)
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -152,11 +152,7 @@ public class DataUtil {
                         for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                             languageModel = snapshot.getValue(LanguageModel.class);
                         }
-                        if(isNativeLangRequest){
-                            dataListner.onLanguageRequest(languageModel,null,true);
-                        }else{
-                            dataListner.onLanguageRequest(null,languageModel,false);
-                        }
+                        dataListner.onResultNotification(languageModel);
                     }
 
                     @Override
@@ -174,6 +170,5 @@ public class DataUtil {
     public interface FirebaseDataListner {
         void onResultNotification(Object tClass);
         void onResultListNotification(List<?> classList);
-        void onLanguageRequest(Object Native, Object Foreign, Boolean isNative);
     }
 }

@@ -110,8 +110,4 @@ public class DestinationLanguageSelectActivity extends AppCompatActivity impleme
 
     }
 
-    @Override
-    public void onLanguageRequest(Object Native, Object Foreign, Boolean isNative) {
-
-    }
 }
