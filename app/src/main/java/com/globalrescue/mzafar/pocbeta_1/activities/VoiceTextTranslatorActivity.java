@@ -48,6 +48,8 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
     NetworkUtils networkUtils;
     String recognizedResult;
     private String translatedText;
+    //A Check flag for Audio Player API to know which Conversion Code to use;
+    private boolean isNativeToForeignConversion;
 
     /*
     TTS Related Attributes - Start
@@ -66,6 +68,7 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
         @Override
         public void onResultNotification(Object tClass) {
             mNativeLanguageModel = (LanguageModel) tClass;
+
         }
 
         @Override
@@ -97,6 +100,10 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
         public void sendTextFromInputAudio(String input) {
             Log.d(TAG, "sendInputTextFromAudio(): input = " + input);
             logs.append(input + " = \n");
+
+            if(!isNativeToForeignConversion){
+                isNativeToForeignConversion = true;
+            }
             //Default variables for translation
             recognizedResult = input;
             String languagePair = NativeToForeignYandexCode; //("<source_language>-<target_language>")
@@ -110,11 +117,42 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
         public void sendTextFromInputAudio(String input) {
             Log.d(TAG, "sendInputTextFromAudio(): input = " + input);
             logs.append(input + " = \n");
+
+            if(isNativeToForeignConversion){
+                isNativeToForeignConversion = false;
+            }
+
             //Default variables for translation
             recognizedResult = input;
             String languagePair = ForeignToNativeYandexCode; //("<source_language>-<target_language>")
             //Executing the translation function
             Translate(recognizedResult, languagePair);
+        }
+    };
+
+    TextInputDialog.onInputTextListener NativeTextInputListner = new TextInputDialog.onInputTextListener() {
+        @Override
+        public void sendInputText(String input) {
+            Log.d(TAG, "sendInput(): input = " + input);
+            logs.append(input + " = \n");
+            //Default variables for translation
+            String textToBeTranslated = input;
+            String languagePair = NativeToForeignYandexCode; // ("<source_language>-<target_language>")
+            //Executing the translation function
+            Translate(textToBeTranslated, languagePair);
+        }
+    };
+
+    TextInputDialog.onInputTextListener ForeignTextInputListner = new TextInputDialog.onInputTextListener() {
+        @Override
+        public void sendInputText(String input) {
+            Log.d(TAG, "sendInput(): input = " + input);
+            logs.append(input + " = \n");
+            //Default variables for translation
+            String textToBeTranslated = input;
+            String languagePair = ForeignToNativeYandexCode; // ("<source_language>-<target_language>")
+            //Executing the translation function
+            Translate(textToBeTranslated, languagePair);
         }
     };
 
@@ -203,7 +241,12 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
     private void synthesize() {
         //Setup our TTS transaction options.
         Transaction.Options options = new Transaction.Options();
-        options.setLanguage(new Language("hin-IND"));
+        if(isNativeToForeignConversion){
+            options.setLanguage(new Language(mForeignLanguageModel.getNuanceCode()));
+        }else {
+            options.setLanguage(new Language(mNativeLanguageModel.getNuanceCode()));
+        }
+
         //options.setVoice(new Voice(Voice.SAMANTHA)); //optionally change the Voice of the speaker, but will use the default if omitted.
 
         //Start a TTS transaction
@@ -336,12 +379,20 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
                 Log.d(TAG, "onClick -> NativeKeyboardButton");
                 TextInputDialog nTextInputDialog = new TextInputDialog();
                 FragmentManager nFragmentManager = this.getSupportFragmentManager();
+                Bundle nativeTextArgs = new Bundle();
+                nativeTextArgs.putSerializable("TEXT_LISTENER",NativeTextInputListner);
+                nTextInputDialog.setArguments(nativeTextArgs);
+
                 nTextInputDialog.show(nFragmentManager, "NativeTextInputDialog");
                 break;
             case R.id.btn_foreign_keyboard:
                 Log.d(TAG, "onClick -> ForeignKeyboardButton");
                 TextInputDialog fTextInputDialog = new TextInputDialog();
                 FragmentManager fFragmentManager = this.getSupportFragmentManager();
+                Bundle foreignTextArgs = new Bundle();
+                foreignTextArgs.putSerializable("TEXT_LISTENER",ForeignTextInputListner);
+                fTextInputDialog.setArguments(foreignTextArgs);
+
                 fTextInputDialog.show(fFragmentManager, "ForeignTextInputDialog");
                 break;
             case R.id.btn_play_audio:
@@ -356,13 +407,13 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
 
     @Override
     public void sendInputText(String input) {
-        Log.d(TAG, "sendInput(): input = " + input);
-        logs.append(input + " = \n");
-        //Default variables for translation
-        String textToBeTranslated = input;
-        String languagePair = "en-hi"; //English to Hindi ("<source_language>-<target_language>")
-        //Executing the translation function
-        Translate(textToBeTranslated, languagePair);
+//        Log.d(TAG, "sendInput(): input = " + input);
+//        logs.append(input + " = \n");
+//        //Default variables for translation
+//        String textToBeTranslated = input;
+//        String languagePair = "en-hi"; //English to Hindi ("<source_language>-<target_language>")
+//        //Executing the translation function
+//        Translate(textToBeTranslated, languagePair);
     }
 
 //    @Override

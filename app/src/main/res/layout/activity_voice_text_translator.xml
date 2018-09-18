@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".activities.VoiceTextTranslatorActivity">
+    tools:context=".activities.VoiceTextTranslatorActivity"
+    android:background="@drawable/main_bg">
 
     <android.support.constraint.Guideline
         android:id="@+id/guideline3"
@@ -110,7 +111,8 @@
         app:layout_constraintBottom_toTopOf="@+id/guideline7"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="parent"
+        android:background="@color/PrimaryLight">
 
         <TextView
             android:id="@+id/tv_voice_translator_header"
@@ -171,7 +173,7 @@
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_marginTop="2dp"
-            app:cardBackgroundColor="@color/PrimaryDarker"
+            app:cardBackgroundColor="@color/PrimaryDarker80"
             app:cardCornerRadius="12dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -203,7 +205,8 @@
             app:layout_constraintTop_toTopOf="parent"
             android:background="@color/transparent"
             app:srcCompat="@drawable/ic_play_circle_outline_black_32dp"
-            android:visibility="invisible"/>
+            android:visibility="invisible"
+            />
 
     </android.support.constraint.ConstraintLayout>
 

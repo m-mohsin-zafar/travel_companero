@@ -15,6 +15,8 @@ import android.widget.EditText;
 
 import com.globalrescue.mzafar.pocbeta_1.R;
 
+import java.io.Serializable;
+
 public class TextInputDialog extends DialogFragment implements View.OnClickListener {
 
     private static final String TAG = "TextInputDialog";
@@ -24,6 +26,13 @@ public class TextInputDialog extends DialogFragment implements View.OnClickListe
     private Button mOkayButton;
 
     public onInputTextListener mOnInputTextListener;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        mOnInputTextListener =(onInputTextListener) getArguments().getSerializable("TEXT_LISTENER");
+    }
 
     @Nullable
     @Override
@@ -73,13 +82,13 @@ public class TextInputDialog extends DialogFragment implements View.OnClickListe
     public void onAttach(Context context) {
         super.onAttach(context);
         try {
-            mOnInputTextListener = (onInputTextListener) getActivity();
+//            mOnInputTextListener = (onInputTextListener) getActivity();
         }catch (ClassCastException e){
             Log.d(TAG,"onAttach: ClassCastException: "+e.getMessage());
         }
     }
 
-    public interface onInputTextListener {
+    public interface onInputTextListener extends Serializable{
         void sendInputText(String input);
     }
 }

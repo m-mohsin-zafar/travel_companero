@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".activities.DestinationLanguageSelectActivity">
+    tools:context=".activities.DestinationLanguageSelectActivity"
+    android:background="@drawable/main_bg">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -14,7 +15,8 @@
         <android.support.v7.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cardElevation="10dp">
+            app:cardElevation="10dp"
+            android:backgroundTint="@color/PrimaryLight">
 
             <TextView
                 android:id="@+id/tv_select_native_lang"
@@ -36,7 +38,8 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:scrollbars="vertical"
-            android:visibility="invisible"/>
+            android:visibility="invisible"
+            />
         <ProgressBar
             android:id="@+id/pg_main_activity_loading"
             android:layout_width="50dp"
