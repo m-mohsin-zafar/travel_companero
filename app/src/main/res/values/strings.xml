@@ -22,4 +22,8 @@
     <string name="try_again">Try Again</string>
     <string name="recognition_results">Recognition Results:</string>
     <string name="translation_results">Translation Results</string>
+
+    <string name="permissions_audio_storage_rationale">Audio and Storage Permission are required to Record your Voice and get Translation Results.</string>
+    <string name="permissions_audio_storage_granted">Audio and Storage Permissions Granted.</string>
+    <string name="permissions_audio_storage_not_granted">Audio and Storage Permissions NOT Granted.</string>
 </resources>

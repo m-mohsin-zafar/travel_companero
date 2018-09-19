@@ -1,6 +1,11 @@
 package com.globalrescue.mzafar.pocbeta_1.activities;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.os.AsyncTask;
+import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -16,6 +21,7 @@ import com.globalrescue.mzafar.pocbeta_1.models.LanguageModel;
 import com.globalrescue.mzafar.pocbeta_1.nuance.Configuration;
 import com.globalrescue.mzafar.pocbeta_1.utilities.DataUtil;
 import com.globalrescue.mzafar.pocbeta_1.utilities.NetworkUtils;
+import com.globalrescue.mzafar.pocbeta_1.utilities.PermissionUtil;
 import com.nuance.speechkit.Audio;
 import com.nuance.speechkit.AudioPlayer;
 import com.nuance.speechkit.Language;
@@ -26,9 +32,13 @@ import com.nuance.speechkit.TransactionException;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-public class VoiceTextTranslatorActivity extends AppCompatActivity implements View.OnClickListener, AudioPlayer.Listener {
+public class VoiceTextTranslatorActivity extends AppCompatActivity implements View.OnClickListener, AudioPlayer.Listener, ActivityCompat.OnRequestPermissionsResultCallback {
 
     private static final String TAG = "VTTranslator";
+
+    private static final int REQUEST_AUDIO_N_STORAGE = 1;
+
+    private static String[] AUDIO_N_STORAGE_PERMISSIONS = {Manifest.permission.RECORD_AUDIO, Manifest.permission.WRITE_EXTERNAL_STORAGE};
 
     private CountryModel mCountryModel;
     private LanguageModel mNativeLanguageModel;
@@ -40,10 +50,11 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
     private Button btnForeignAudio;
     private Button btnNativeText;
     private Button btnForeignText;
+    private ImageButton btnPlayAudio;
 
     private TextView logs;
 
-    private ImageButton btnPlayAudio;
+    private View mLayout;
 
     NetworkUtils networkUtils;
     String recognizedResult;
@@ -160,6 +171,8 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_voice_text_translator);
+
+        mLayout = findViewById(R.id.vtt_main_layout);
 
         btnNativeAudio = findViewById(R.id.btn_native_audio);
         btnForeignAudio = findViewById(R.id.btn_foreign_audio);
@@ -349,48 +362,47 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
         switch (v.getId()) {
             case R.id.btn_native_audio:
                 Log.d(TAG, "onClick -> NativeAudioButton");
-                AudioInputDialog naAudioInputDialog = new AudioInputDialog();
-                FragmentManager naFragmentManager = this.getSupportFragmentManager();
-                Bundle args = new Bundle();
-                args.putString("NUANCE_CODE", mNativeLanguageModel.getNuanceCode());
-                args.putSerializable("AUDIO_LISTENER", NativeAudioInputListner);
-                // TODO: 9/17/2018 Make this native country as a generic input
 
-                naAudioInputDialog.setArguments(args);
+                if(ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+                        != PackageManager.PERMISSION_GRANTED ||  ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        != PackageManager.PERMISSION_GRANTED){
 
-                naAudioInputDialog.show(naFragmentManager, "NativeAudioInputDialog");
+                    Log.i(TAG, "onClick: Permissions not granted...");
+                    requestAudioAndStoragePermission();
+
+                } else {
+
+                    displayAudioInputDialog(mNativeLanguageModel.getNuanceCode(), NativeAudioInputListner);
+
+                }
                 break;
             case R.id.btn_foreign_audio:
                 Log.d(TAG, "onClick -> ForeignAudioButton");
-                AudioInputDialog nfAudioInputDialog = new AudioInputDialog();
-                FragmentManager nfFragmentManager = this.getSupportFragmentManager();
-                Bundle fargs = new Bundle();
-                fargs.putString("NUANCE_CODE", mForeignLanguageModel.getNuanceCode());
-                fargs.putSerializable("AUDIO_LISTENER", ForeignAudioInputListner);
 
-                nfAudioInputDialog.setArguments(fargs);
+                if(ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+                        != PackageManager.PERMISSION_GRANTED ||  ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        != PackageManager.PERMISSION_GRANTED){
 
-                nfAudioInputDialog.show(nfFragmentManager, "ForeignAudioInputDialog");
+                    Log.i(TAG, "onClick: Permissions not granted...");
+                    requestAudioAndStoragePermission();
+
+                } else {
+
+                    displayAudioInputDialog(mForeignLanguageModel.getNuanceCode(), ForeignAudioInputListner);
+
+                }
                 break;
             case R.id.btn_native_keyboard:
                 Log.d(TAG, "onClick -> NativeKeyboardButton");
-                TextInputDialog nTextInputDialog = new TextInputDialog();
-                FragmentManager nFragmentManager = this.getSupportFragmentManager();
-                Bundle nativeTextArgs = new Bundle();
-                nativeTextArgs.putSerializable("TEXT_LISTENER",NativeTextInputListner);
-                nTextInputDialog.setArguments(nativeTextArgs);
 
-                nTextInputDialog.show(nFragmentManager, "NativeTextInputDialog");
+                displayTextInputDialog(NativeTextInputListner);
+
                 break;
             case R.id.btn_foreign_keyboard:
                 Log.d(TAG, "onClick -> ForeignKeyboardButton");
-                TextInputDialog fTextInputDialog = new TextInputDialog();
-                FragmentManager fFragmentManager = this.getSupportFragmentManager();
-                Bundle foreignTextArgs = new Bundle();
-                foreignTextArgs.putSerializable("TEXT_LISTENER",ForeignTextInputListner);
-                fTextInputDialog.setArguments(foreignTextArgs);
 
-                fTextInputDialog.show(fFragmentManager, "ForeignTextInputDialog");
+                displayTextInputDialog(ForeignTextInputListner);
+
                 break;
             case R.id.btn_play_audio:
                 toggleTTS();
@@ -447,4 +459,75 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
      * */
 
 
+    /**
+     * Method for Displaying Text Input Dialog Fragment
+     */
+    private void displayTextInputDialog(TextInputDialog.onInputTextListener listener){
+
+        TextInputDialog mTextInputDialog = new TextInputDialog();
+        FragmentManager mFragmentManager = this.getSupportFragmentManager();
+        Bundle textArgs = new Bundle();
+        textArgs.putSerializable("TEXT_LISTENER", listener);
+        mTextInputDialog.setArguments(textArgs);
+
+        mTextInputDialog.show(mFragmentManager, "TextInputDialog");
+    }
+
+    /**
+     * Method for Displaying Audio Input Dialog Fragment
+     */
+    private void displayAudioInputDialog(String nuanceCode, AudioInputDialog.onInputAudioListener listener){
+        AudioInputDialog mAudioInputDialog = new AudioInputDialog();
+        FragmentManager mFragmentManager = this.getSupportFragmentManager();
+        Bundle args = new Bundle();
+        args.putString("NUANCE_CODE", nuanceCode);
+        args.putSerializable("AUDIO_LISTENER", listener);
+        // TODO: 9/17/2018 Make this native country as a generic input
+
+        mAudioInputDialog.setArguments(args);
+
+        mAudioInputDialog.show(mFragmentManager, "AudioInputDialog");
+    }
+
+
+    /**
+     * Method for Handling Audio and Storage Permissions
+     */
+    private void requestAudioAndStoragePermission(){
+
+        if(ActivityCompat.shouldShowRequestPermissionRationale(VoiceTextTranslatorActivity.this,Manifest.permission.WRITE_EXTERNAL_STORAGE) ||
+                ActivityCompat.shouldShowRequestPermissionRationale(VoiceTextTranslatorActivity.this, Manifest.permission.RECORD_AUDIO)){
+
+            Log.i(TAG, "requestAudioAndStoragePermission: Displaying Permissions Rationale with Additional Information...");
+
+            Snackbar.make(mLayout,R.string.permissions_audio_storage_rationale, Snackbar.LENGTH_INDEFINITE)
+                    .setAction(R.string.ok, new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            ActivityCompat
+                                    .requestPermissions(VoiceTextTranslatorActivity.this, AUDIO_N_STORAGE_PERMISSIONS, REQUEST_AUDIO_N_STORAGE);
+                        }
+                    })
+                    .show();
+        } else {
+            ActivityCompat.requestPermissions(VoiceTextTranslatorActivity.this, AUDIO_N_STORAGE_PERMISSIONS, REQUEST_AUDIO_N_STORAGE);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == REQUEST_AUDIO_N_STORAGE){
+            Log.d(TAG, "onRequestPermissionsResult: Received Response for Audio and Storage Request");
+
+            if (PermissionUtil.verifyPermissions(grantResults)){
+                Snackbar.make(mLayout,R.string.permissions_audio_storage_granted, Snackbar.LENGTH_SHORT).show();
+            } else {
+                Log.d(TAG, "onRequestPermissionsResult: Permissions NOT granted");
+                Snackbar.make(mLayout,R.string.permissions_audio_storage_not_granted, Snackbar.LENGTH_SHORT).show();
+            }
+        } else {
+            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
+
+    }
 }

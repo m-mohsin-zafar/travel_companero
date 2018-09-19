@@ -5,7 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".activities.VoiceTextTranslatorActivity"
-    android:background="@drawable/main_bg">
+    android:background="@drawable/main_bg"
+    android:id="@+id/vtt_main_layout">
 
     <android.support.constraint.Guideline
         android:id="@+id/guideline3"
