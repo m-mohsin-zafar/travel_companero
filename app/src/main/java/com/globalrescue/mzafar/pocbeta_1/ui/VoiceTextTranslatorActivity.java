@@ -1,4 +1,4 @@
-package com.globalrescue.mzafar.pocbeta_1.activities;
+package com.globalrescue.mzafar.pocbeta_1.ui;
 
 import android.Manifest;
 import android.content.pm.PackageManager;

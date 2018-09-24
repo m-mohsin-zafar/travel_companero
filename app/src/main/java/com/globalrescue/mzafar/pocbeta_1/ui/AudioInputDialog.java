@@ -1,9 +1,8 @@
-package com.globalrescue.mzafar.pocbeta_1.activities;
+package com.globalrescue.mzafar.pocbeta_1.ui;
 
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
@@ -20,7 +19,6 @@ import android.widget.TextView;
 import com.globalrescue.mzafar.pocbeta_1.R;
 import com.globalrescue.mzafar.pocbeta_1.nuance.ASR;
 import com.globalrescue.mzafar.pocbeta_1.nuance.Configuration;
-import com.globalrescue.mzafar.pocbeta_1.utilities.DataUtil;
 import com.nuance.speechkit.Audio;
 import com.nuance.speechkit.DetectionType;
 import com.nuance.speechkit.Language;
@@ -31,7 +29,6 @@ import com.nuance.speechkit.Transaction;
 import com.nuance.speechkit.TransactionException;
 
 import java.io.Serializable;
-import java.util.List;
 
 public class AudioInputDialog extends DialogFragment implements View.OnClickListener, ASR.ChangeListener{
 

@@ -3,9 +3,9 @@
     package="com.globalrescue.mzafar.pocbeta_1">
 
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -14,15 +14,17 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppMaterialTheme">
-        <activity android:name=".activities.DestinationLanguageSelectActivity">
+        <activity android:name=".ui.DestinationLanguageSelectActivity">
+        </activity>
+        <activity android:name=".ui.HomeActivity" />
+        <activity android:name=".ui.VoiceTextTranslatorActivity" />
+        <activity android:name=".ui.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".activities.HomeActivity" />
-        <activity android:name=".activities.VoiceTextTranslatorActivity" />
     </application>
 
 </manifest>

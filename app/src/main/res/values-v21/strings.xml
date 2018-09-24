@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="select_native_lang_label">Select Native Country</string>
     <string name="translator">Voice / Text Translator</string>
     <string name="image_translator">Image Translator</string>
     <string name="destination">Destination - </string>
