@@ -20,7 +20,8 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     private Button mTranslatorBtn;
     private Button mImageTranslationBtn;
 
-    private CountryModel mCountryModel;
+    private CountryModel mForeignCountryModel;
+    private CountryModel mNativeCountryModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,10 +37,11 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         mImageTranslationBtn.setOnClickListener(this);
 
         Bundle extraBundle = getIntent().getExtras();
-        mCountryModel = (CountryModel) extraBundle.getSerializable("COUNTRY_MODEL");
+        mForeignCountryModel = (CountryModel) extraBundle.getSerializable("FOREIGN_COUNTRY_MODEL");
+        mNativeCountryModel = (CountryModel) extraBundle.getSerializable("NATIVE_COUNTRY_MODEL");
 
-        int flagId = this.getResources().getIdentifier("com.globalrescue.mzafar.pocbeta_1:drawable/"+mCountryModel.getFlagURL(),null,null);
-        mDestCountryTextView.setText(mCountryModel.getCountry());
+        int flagId = this.getResources().getIdentifier("com.globalrescue.mzafar.pocbeta_1:drawable/"+mForeignCountryModel.getFlagURL(),null,null);
+        mDestCountryTextView.setText(mForeignCountryModel.getCountry());
         mCountryFlag.setImageResource(flagId);
 
     }
@@ -50,7 +52,8 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             Context context = HomeActivity.this;
             Class destinationActivity = VoiceTextTranslatorActivity.class;
             Intent intent = new Intent(context, destinationActivity);
-            intent.putExtra("COUNTRY_MODEL",mCountryModel);
+            intent.putExtra("FOREIGN_COUNTRY_MODEL",mForeignCountryModel);
+            intent.putExtra("NATIVE_COUNTRY_MODEL",mNativeCountryModel);
             startActivity(intent);
         }
         else if (v == mImageTranslationBtn){

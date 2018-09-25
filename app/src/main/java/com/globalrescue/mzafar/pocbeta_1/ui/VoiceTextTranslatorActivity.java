@@ -40,7 +40,8 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
 
     private static String[] AUDIO_N_STORAGE_PERMISSIONS = {Manifest.permission.RECORD_AUDIO, Manifest.permission.WRITE_EXTERNAL_STORAGE};
 
-    private CountryModel mCountryModel;
+    private CountryModel mNativeCountry;
+    private CountryModel mForeignCountry;
     private LanguageModel mNativeLanguageModel;
     private LanguageModel mForeignLanguageModel;
     private String NativeToForeignYandexCode;
@@ -187,13 +188,16 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
         btnPlayAudio.setOnClickListener(this);
 
         Bundle extraBundle = getIntent().getExtras();
-        mCountryModel = (CountryModel) extraBundle.getSerializable("COUNTRY_MODEL");
+        mNativeCountry = (CountryModel) extraBundle.getSerializable("NATIVE_COUNTRY_MODEL");
+        mForeignCountry = (CountryModel) extraBundle.getSerializable("FOREIGN_COUNTRY_MODEL");
 
         DataUtil dataUtil = new DataUtil();
 
         // TODO: 9/17/2018 Make Hardcoded Native Language Input to generic...
-        dataUtil.getLanguagenCode(dataUtil.getFirebaseDBRefernce("languages"), "USA", NativeLangModelListner);
-        dataUtil.getLanguagenCode(dataUtil.getFirebaseDBRefernce("languages"), mCountryModel.getCountry(), ForeignLangModelListner);
+//        dataUtil.getLanguagenCode(dataUtil.getFirebaseDBRefernce("languages"), mNativeCountry.getCountry(), NativeLangModelListner);
+//        dataUtil.getLanguagenCode(dataUtil.getFirebaseDBRefernce("languages"), mForeignCountry.getCountry(), ForeignLangModelListner);
+        dataUtil.getLanguagenCodeFirestore(mNativeCountry.getCountry(),NativeLangModelListner);
+        dataUtil.getLanguagenCodeFirestore(mForeignCountry.getCountry(),ForeignLangModelListner);
 
         logs = findViewById(R.id.logs);
         /*

@@ -14,8 +14,6 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppMaterialTheme">
-        <activity android:name=".ui.DestinationLanguageSelectActivity">
-        </activity>
         <activity android:name=".ui.HomeActivity" />
         <activity android:name=".ui.VoiceTextTranslatorActivity" />
         <activity android:name=".ui.MainActivity">

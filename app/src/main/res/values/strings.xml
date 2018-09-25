@@ -2,6 +2,7 @@
     <string name="app_name">Travel Compañero</string>
     <string name="select_destination_lang_label">Select Destination Country</string>
     <string name="select_native_lang_label">Select Native Country</string>
+    <string name="select_foreign_lang_label">Select Destination Country</string>
     <string name="translator">Voice / Text Translator</string>
     <string name="image_translator">Image Translator</string>
     <string name="destination">Destination - </string>
@@ -28,6 +29,4 @@
     <string name="permissions_audio_storage_granted">Audio and Storage Permissions Granted.</string>
     <string name="permissions_audio_storage_not_granted">Audio and Storage Permissions NOT Granted.</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

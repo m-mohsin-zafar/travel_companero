@@ -34,7 +34,6 @@ import jp.wasabeef.recyclerview.animators.SlideInDownAnimator;
  * create an instance of this fragment.
  */
 public class NativeLangSelectionFragment extends Fragment implements DataUtil.FirebaseDataListner, LangListAdapter.CountrySelectionListener, View.OnClickListener {
-//Can add this if needed
 
     private static final String TAG = "NLFragment";
 
@@ -112,10 +111,10 @@ public class NativeLangSelectionFragment extends Fragment implements DataUtil.Fi
         super.onStart();
 
         DataUtil dataUtil = new DataUtil(this);
-        dataUtil.getListOfCountries(dataUtil.getFirebaseDBRefernce("countries"));
+//        dataUtil.getListOfCountries(dataUtil.getFirebaseDBRefernce("countries"));
+        dataUtil.getListOfCountriesFirestore();
     }
 
-    // TODO: Rename method, update argument and hook method into UI event
 //    public void onButtonPressed(Uri uri) {
 //        if (mListener != null) {
 //            mListener.onFragmentInteraction(uri);
@@ -158,7 +157,7 @@ public class NativeLangSelectionFragment extends Fragment implements DataUtil.Fi
 
     @Override
     public void onResultListNotification(List<?> classList) {
-        Log.d(TAG, "onResultListNotification: Getting Results from Firebase");
+        Log.i(TAG, "onResultListNotification: Getting Results from Firebase");
         countryList = (List<CountryModel>) classList;
         mLoading.setVisibility(View.INVISIBLE);
         initRecyclerView();
@@ -187,14 +186,11 @@ public class NativeLangSelectionFragment extends Fragment implements DataUtil.Fi
         if (v == mNextBtn) {
             if (selectedNativeCountry != null) {
 
-//                Context context = DestinationLanguageSelectActivity.this;
-//                Class destinationActivity = HomeActivity.class;
-//                Intent intent = new Intent(context, destinationActivity);
-//                intent.putExtra("COUNTRY_MODEL", country);
-//                startActivity(intent);
                 if (mListener != null) {
                     mListener.onNLFragmentInteraction(selectedNativeCountry);
                 }
+
+                ((MainActivity)getActivity()).setFragmentOnViewPager(1);
 
             } else {
                 if (mToast != null) {
