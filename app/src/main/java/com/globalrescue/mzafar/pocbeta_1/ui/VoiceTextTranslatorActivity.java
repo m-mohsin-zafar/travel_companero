@@ -110,7 +110,7 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
     AudioInputDialog.onInputAudioListener NativeAudioInputListner = new AudioInputDialog.onInputAudioListener() {
         @Override
         public void sendTextFromInputAudio(String input) {
-            Log.d(TAG, "sendInputTextFromAudio(): input = " + input);
+            Log.i(TAG, "sendInputTextFromAudio(): input = " + input);
             logs.append(input + " = \n");
 
             if(!isNativeToForeignConversion){
@@ -127,7 +127,7 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
     AudioInputDialog.onInputAudioListener ForeignAudioInputListner = new AudioInputDialog.onInputAudioListener() {
         @Override
         public void sendTextFromInputAudio(String input) {
-            Log.d(TAG, "sendInputTextFromAudio(): input = " + input);
+            Log.i(TAG, "sendInputTextFromAudio(): input = " + input);
             logs.append(input + " = \n");
 
             if(isNativeToForeignConversion){
@@ -145,7 +145,7 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
     TextInputDialog.onInputTextListener NativeTextInputListner = new TextInputDialog.onInputTextListener() {
         @Override
         public void sendInputText(String input) {
-            Log.d(TAG, "sendInput(): input = " + input);
+            Log.i(TAG, "sendInput(): input = " + input);
             logs.append(input + " = \n");
             //Default variables for translation
             String textToBeTranslated = input;
@@ -158,7 +158,7 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
     TextInputDialog.onInputTextListener ForeignTextInputListner = new TextInputDialog.onInputTextListener() {
         @Override
         public void sendInputText(String input) {
-            Log.d(TAG, "sendInput(): input = " + input);
+            Log.i(TAG, "sendInput(): input = " + input);
             logs.append(input + " = \n");
             //Default variables for translation
             String textToBeTranslated = input;
@@ -193,7 +193,6 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
 
         DataUtil dataUtil = new DataUtil();
 
-        // TODO: 9/17/2018 Make Hardcoded Native Language Input to generic...
 //        dataUtil.getLanguagenCode(dataUtil.getFirebaseDBRefernce("languages"), mNativeCountry.getCountry(), NativeLangModelListner);
 //        dataUtil.getLanguagenCode(dataUtil.getFirebaseDBRefernce("languages"), mForeignCountry.getCountry(), ForeignLangModelListner);
         dataUtil.getLanguagenCodeFirestore(mNativeCountry.getCountry(),NativeLangModelListner);
@@ -267,7 +266,7 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
         ttsTransaction = speechSession.speakString(getTranslatedText(), options, new Transaction.Listener() {
             @Override
             public void onAudio(Transaction transaction, Audio audio) {
-                Log.d(TAG, "\nonAudio");
+                Log.i(TAG, "\nonAudio");
 
                 //The TTS audio has returned from the server, and has begun auto-playing.
                 ttsTransaction = null;
@@ -276,14 +275,14 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
 
             @Override
             public void onSuccess(Transaction transaction, String s) {
-                Log.d(TAG, "\nonSuccess");
+                Log.i(TAG, "\nonSuccess");
 
                 //Notification of a successful transaction. Nothing to do here.
             }
 
             @Override
             public void onError(Transaction transaction, String s, TransactionException e) {
-                Log.d(TAG, "\nonError: " + e.getMessage() + ". " + s);
+                Log.i(TAG, "\nonError: " + e.getMessage() + ". " + s);
 
                 //Something went wrong. Check Configuration.java to ensure that your settings are correct.
                 //The user could also be offline, so be sure to handle this case appropriately.
@@ -303,7 +302,7 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
 
     @Override
     public void onBeginPlaying(AudioPlayer audioPlayer, Audio audio) {
-        Log.d(TAG, "\nonBeginPlaying");
+        Log.i(TAG, "\nonBeginPlaying");
 
         //The TTS Audio will begin playing.
 
@@ -312,7 +311,7 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
 
     @Override
     public void onFinishedPlaying(AudioPlayer audioPlayer, Audio audio) {
-        Log.d(TAG, "\nonFinishedPlaying");
+        Log.i(TAG, "\nonFinishedPlaying");
 
         //The TTS Audio has finished playing
 
@@ -365,7 +364,7 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
 
         switch (v.getId()) {
             case R.id.btn_native_audio:
-                Log.d(TAG, "onClick -> NativeAudioButton");
+                Log.i(TAG, "onClick -> NativeAudioButton");
 
                 if(ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
                         != PackageManager.PERMISSION_GRANTED ||  ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
@@ -381,7 +380,7 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
                 }
                 break;
             case R.id.btn_foreign_audio:
-                Log.d(TAG, "onClick -> ForeignAudioButton");
+                Log.i(TAG, "onClick -> ForeignAudioButton");
 
                 if(ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
                         != PackageManager.PERMISSION_GRANTED ||  ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
@@ -397,13 +396,13 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
                 }
                 break;
             case R.id.btn_native_keyboard:
-                Log.d(TAG, "onClick -> NativeKeyboardButton");
+                Log.i(TAG, "onClick -> NativeKeyboardButton");
 
                 displayTextInputDialog(NativeTextInputListner);
 
                 break;
             case R.id.btn_foreign_keyboard:
-                Log.d(TAG, "onClick -> ForeignKeyboardButton");
+                Log.i(TAG, "onClick -> ForeignKeyboardButton");
 
                 displayTextInputDialog(ForeignTextInputListner);
 
@@ -432,7 +431,7 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        Log.d("Translation Result", translationResult);
+        Log.i("Translation Result", translationResult);
     }
 
     //Task Translation Async Task Handler
@@ -486,7 +485,6 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
         Bundle args = new Bundle();
         args.putString("NUANCE_CODE", nuanceCode);
         args.putSerializable("AUDIO_LISTENER", listener);
-        // TODO: 9/17/2018 Make this native country as a generic input
 
         mAudioInputDialog.setArguments(args);
 
@@ -521,12 +519,12 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == REQUEST_AUDIO_N_STORAGE){
-            Log.d(TAG, "onRequestPermissionsResult: Received Response for Audio and Storage Request");
+            Log.i(TAG, "onRequestPermissionsResult: Received Response for Audio and Storage Request");
 
             if (PermissionUtil.verifyPermissions(grantResults)){
                 Snackbar.make(mLayout,R.string.permissions_audio_storage_granted, Snackbar.LENGTH_SHORT).show();
             } else {
-                Log.d(TAG, "onRequestPermissionsResult: Permissions NOT granted");
+                Log.i(TAG, "onRequestPermissionsResult: Permissions NOT granted");
                 Snackbar.make(mLayout,R.string.permissions_audio_storage_not_granted, Snackbar.LENGTH_SHORT).show();
             }
         } else {

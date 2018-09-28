@@ -57,7 +57,13 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             startActivity(intent);
         }
         else if (v == mImageTranslationBtn){
-            Toast.makeText(this, "This feature will be available in next release", Toast.LENGTH_SHORT).show();
+            Context context = HomeActivity.this;
+            Class destinationActivity = ImageTranslationActivity.class;
+            Intent intent = new Intent(context, destinationActivity);
+            intent.putExtra("FOREIGN_COUNTRY_MODEL",mForeignCountryModel);
+            intent.putExtra("NATIVE_COUNTRY_MODEL",mNativeCountryModel);
+            startActivity(intent);
+//            Toast.makeText(this, "This feature will be available in next release", Toast.LENGTH_SHORT).show();
         }
     }
 }

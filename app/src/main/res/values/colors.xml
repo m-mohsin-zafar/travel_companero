@@ -10,6 +10,7 @@
     <color name="PrimaryLight">#E68D6E63</color>
     <color name="PrimaryDarker">#3E2723</color>
     <color name="AmberA700">#E6FFAB00</color>
+    <color name="Gray600A80">#E6757575</color>
     <color name="Gray50">#FAFAFA</color>
     <color name="colorListItems">#BF424242</color>
     <color name="transparent">#00000000</color>
