@@ -17,6 +17,7 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:visibility="invisible"
+        android:indeterminateTint="@color/PrimaryDarker"
         android:indeterminate="true"
         app:layout_constraintBottom_toBottomOf="@+id/img_translation_results_container"
         app:layout_constraintEnd_toEndOf="@+id/img_translation_results_container"

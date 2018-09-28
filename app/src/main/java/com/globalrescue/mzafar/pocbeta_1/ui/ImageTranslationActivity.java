@@ -37,12 +37,14 @@ import com.google.api.services.vision.v1.model.BatchAnnotateImagesResponse;
 import com.google.api.services.vision.v1.model.EntityAnnotation;
 import com.google.api.services.vision.v1.model.Feature;
 import com.google.api.services.vision.v1.model.Image;
+import com.google.api.services.vision.v1.model.ImageContext;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -227,6 +229,12 @@ public class ImageTranslationActivity extends AppCompatActivity implements View.
                 add(textDetection);
             }});
 
+            // TODO (1): 9/28/2018 - Need to devise some plan and add support for langs to use in LanguageHints
+            ImageContext imageContext = new ImageContext();
+            String[] langs = {"hi"};
+            imageContext.setLanguageHints(Arrays.asList(langs));
+
+            annotateImageRequest.setImageContext(imageContext);
             // Add the list of one thing to the request
             add(annotateImageRequest);
         }});
@@ -269,7 +277,11 @@ public class ImageTranslationActivity extends AppCompatActivity implements View.
             ImageTranslationActivity activity = mActivityWeakReference.get();
             if (activity != null && !activity.isFinishing()) {
                 TextView imageDetail = activity.findViewById(R.id.image_details);
+                ProgressBar mImageResultProgress = activity.findViewById(R.id.pg_img_details);
+
+                mImageResultProgress.setVisibility(View.INVISIBLE);
                 imageDetail.setText(result);
+
             }
         }
     }
@@ -277,6 +289,7 @@ public class ImageTranslationActivity extends AppCompatActivity implements View.
     private void callCloudVision(final Bitmap bitmap) {
         // Switch text to loading
         mImageDetails.setText(R.string.loading_message_img);
+        mImageProgress.setVisibility(View.VISIBLE);
 
         // Do the real work in an async task, because we need to use the network anyway
         try {
@@ -309,7 +322,7 @@ public class ImageTranslationActivity extends AppCompatActivity implements View.
     }
 
     private static String convertResponseToString(BatchAnnotateImagesResponse response) {
-        StringBuilder message = new StringBuilder("I found these things:\n\n");
+        StringBuilder message = new StringBuilder("Here are your results:\n\n");
 
         List<EntityAnnotation> labels = response.getResponses().get(0).getTextAnnotations();
         if (labels != null) {
