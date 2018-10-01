@@ -20,6 +20,10 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.gson.Gson;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,6 +54,25 @@ public class DataUtil {
         Gson gson = new Gson();
         T clazz = gson.fromJson(jsonString, tClass);
         return clazz;
+    }
+
+    public String getJSON(Object clazz){
+        Gson gson = new Gson();
+        return gson.toJson(clazz);
+    }
+
+    public String getTranslationResponseAsString(JSONObject jsonObject){
+        String result = "";
+        try {
+            JSONArray jsonArray = jsonObject.getJSONObject("data").getJSONArray("translations");
+            for(int i = 0; i<jsonArray.length();i++){
+                result = jsonArray.getJSONObject(i).getString("translatedText");
+            }
+            return result;
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return result;
     }
 
     public DatabaseReference getFirebaseDBRefernce(String refernceFor) {

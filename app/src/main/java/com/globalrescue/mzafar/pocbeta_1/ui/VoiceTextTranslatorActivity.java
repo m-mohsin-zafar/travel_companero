@@ -22,6 +22,7 @@ import com.globalrescue.mzafar.pocbeta_1.nuance.Configuration;
 import com.globalrescue.mzafar.pocbeta_1.utilities.DataUtil;
 import com.globalrescue.mzafar.pocbeta_1.utilities.NetworkUtils;
 import com.globalrescue.mzafar.pocbeta_1.utilities.PermissionUtil;
+import com.google.gson.annotations.SerializedName;
 import com.nuance.speechkit.Audio;
 import com.nuance.speechkit.AudioPlayer;
 import com.nuance.speechkit.Language;
@@ -118,9 +119,8 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
             }
             //Default variables for translation
             recognizedResult = input;
-            String languagePair = NativeToForeignYandexCode; //("<source_language>-<target_language>")
             //Executing the translation function
-            Translate(recognizedResult, languagePair);
+            GoogleTranslation(recognizedResult, mNativeLanguageModel.getYandexCode(),mForeignLanguageModel.getYandexCode());
         }
     };
 
@@ -136,9 +136,8 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
 
             //Default variables for translation
             recognizedResult = input;
-            String languagePair = ForeignToNativeYandexCode; //("<source_language>-<target_language>")
             //Executing the translation function
-            Translate(recognizedResult, languagePair);
+            GoogleTranslation(recognizedResult,mForeignLanguageModel.getYandexCode(),mNativeLanguageModel.getYandexCode());
         }
     };
 
@@ -149,9 +148,8 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
             logs.append(input + " = \n");
             //Default variables for translation
             String textToBeTranslated = input;
-            String languagePair = NativeToForeignYandexCode; // ("<source_language>-<target_language>")
             //Executing the translation function
-            Translate(textToBeTranslated, languagePair);
+            GoogleTranslation(textToBeTranslated, mNativeLanguageModel.getYandexCode(),mForeignLanguageModel.getYandexCode());
         }
     };
 
@@ -162,9 +160,32 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
             logs.append(input + " = \n");
             //Default variables for translation
             String textToBeTranslated = input;
-            String languagePair = ForeignToNativeYandexCode; // ("<source_language>-<target_language>")
             //Executing the translation function
-            Translate(textToBeTranslated, languagePair);
+            GoogleTranslation(textToBeTranslated,mForeignLanguageModel.getYandexCode(),mNativeLanguageModel.getYandexCode());
+        }
+    };
+
+    AudioPlayer.Listener nativeAudioPlayer = new AudioPlayer.Listener() {
+        @Override
+        public void onBeginPlaying(AudioPlayer audioPlayer, Audio audio) {
+
+        }
+
+        @Override
+        public void onFinishedPlaying(AudioPlayer audioPlayer, Audio audio) {
+
+        }
+    };
+
+    AudioPlayer.Listener foreignAudioPlayer = new AudioPlayer.Listener() {
+        @Override
+        public void onBeginPlaying(AudioPlayer audioPlayer, Audio audio) {
+
+        }
+
+        @Override
+        public void onFinishedPlaying(AudioPlayer audioPlayer, Audio audio) {
+
         }
     };
 
@@ -248,18 +269,16 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
         }
     }
 
-    /**
-     * Speak the text that is in the ttsText EditText, using the language in the language EditText.
-     */
     private void synthesize() {
         //Setup our TTS transaction options.
         Transaction.Options options = new Transaction.Options();
         if(isNativeToForeignConversion){
-            options.setLanguage(new Language(mForeignLanguageModel.getNuanceCode()));
-        }else {
             options.setLanguage(new Language(mNativeLanguageModel.getNuanceCode()));
+        }else {
+            options.setLanguage(new Language(mForeignLanguageModel.getNuanceCode()));
         }
-
+        Log.i(TAG,options.getLanguage().toString());
+//        options.setAutoplay(false);
         //options.setVoice(new Voice(Voice.SAMANTHA)); //optionally change the Voice of the speaker, but will use the default if omitted.
 
         //Start a TTS transaction
@@ -268,7 +287,7 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
             public void onAudio(Transaction transaction, Audio audio) {
                 Log.i(TAG, "\nonAudio");
 
-                //The TTS audio has returned from the server, and has begun auto-playing.
+//                The TTS audio has returned from the server, and has begun auto-playing.
                 ttsTransaction = null;
 //                toggleTTS.setText(getResources().getString(R.string.speak_string));
             }
@@ -303,6 +322,10 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
     @Override
     public void onBeginPlaying(AudioPlayer audioPlayer, Audio audio) {
         Log.i(TAG, "\nonBeginPlaying");
+//        audioPlayer.enqueue(audio);
+//        audioPlayer.play();
+//        audioPlayer.dequeue(audio);
+        ttsTransaction=null;
 
         //The TTS Audio will begin playing.
 
@@ -417,8 +440,42 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
 
     }
 
+    void GoogleTranslation(String sourceText, String sourceLanguage, String targetLanguage){
+        String translationResult = null; // Returns the translated text as a String
+        try {
+            translationResult = new GoogleTextTranslationTask().execute(sourceText, sourceLanguage, targetLanguage).get();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        Log.i("G-Translation Result", translationResult);
+    }
+    class GoogleTextTranslationTask extends AsyncTask<String, Void, String> {
+
+        @Override
+        protected String doInBackground(String... strings) {
+            networkUtils = new NetworkUtils();
+            String Result = networkUtils.GoogleTextTranslationREST(strings[0],strings[1],strings[2]);
+            if (Result != null && !Result.equals("")) {
+                return Result;
+            }
+            return "Got Nothing!";
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+            setTranslatedText(s);
+            if (!s.equals("Got Nothing!")) {
+                btnPlayAudio.setVisibility(View.VISIBLE);
+            }
+            logs.append(s + "\n");
+        }
+    }
+
     /*
-     * Text to Text Translation - Start
+     * Yandex Text to Text Translation - Start
      * */
 
     //Function for calling & executing the Translator Background Task
@@ -493,7 +550,7 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
 
 
     /**
-     * Method for Handling Audio and Storage Permissions
+     * Methods for Handling Audio and Storage Permissions
      */
     private void requestAudioAndStoragePermission(){
 
