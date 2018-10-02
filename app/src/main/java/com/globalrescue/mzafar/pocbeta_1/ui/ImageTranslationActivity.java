@@ -21,6 +21,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.globalrescue.mzafar.pocbeta_1.R;
+import com.globalrescue.mzafar.pocbeta_1.models.CountryModel;
+import com.globalrescue.mzafar.pocbeta_1.models.GoogleTranslatePOSTRequestModel;
+import com.globalrescue.mzafar.pocbeta_1.models.LanguageModel;
+import com.globalrescue.mzafar.pocbeta_1.utilities.DataUtil;
+import com.globalrescue.mzafar.pocbeta_1.utilities.NetworkUtils;
 import com.globalrescue.mzafar.pocbeta_1.utilities.PackageManagerUtils;
 import com.globalrescue.mzafar.pocbeta_1.utilities.PermissionUtil;
 import com.google.api.client.extensions.android.http.AndroidHttp;
@@ -47,6 +52,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.ExecutionException;
 
 public class ImageTranslationActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -68,6 +74,42 @@ public class ImageTranslationActivity extends AppCompatActivity implements View.
     private ProgressBar mImageProgress;
     private Button mUploadImage;
 
+    private CountryModel mNativeCountry;
+    private CountryModel mForeignCountry;
+    private LanguageModel mNativeLanguageModel;
+    private LanguageModel mForeignLanguageModel;
+
+    private DataUtil dataUtil;
+    private NetworkUtils networkUtils;
+    private String[] langHints = new String[1];
+
+    DataUtil.FirebaseDataListner NativeLangModelListner = new DataUtil.FirebaseDataListner() {
+        @Override
+        public void onResultNotification(Object tClass) {
+            mNativeLanguageModel = (LanguageModel) tClass;
+//            langHints[1] = mNativeLanguageModel.getYandexCode();
+        }
+
+        @Override
+        public void onResultListNotification(List<?> classList) {
+
+        }
+
+    };
+
+    DataUtil.FirebaseDataListner ForeignLangModelListner = new DataUtil.FirebaseDataListner() {
+        @Override
+        public void onResultNotification(Object tClass) {
+            mForeignLanguageModel = (LanguageModel) tClass;
+            langHints[0] = mForeignLanguageModel.getYandexCode();
+        }
+
+        @Override
+        public void onResultListNotification(List<?> classList) {
+
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -79,6 +121,15 @@ public class ImageTranslationActivity extends AppCompatActivity implements View.
         mUploadImage = findViewById(R.id.btn_upload_image);
 
         mUploadImage.setOnClickListener(this);
+
+        Bundle extraBundle = getIntent().getExtras();
+        mNativeCountry = (CountryModel) extraBundle.getSerializable("NATIVE_COUNTRY_MODEL");
+        mForeignCountry = (CountryModel) extraBundle.getSerializable("FOREIGN_COUNTRY_MODEL");
+
+        dataUtil = new DataUtil();
+        dataUtil.getLanguagenCodeFirestore(mNativeCountry.getCountry(), NativeLangModelListner);
+        dataUtil.getLanguagenCodeFirestore(mForeignCountry.getCountry(), ForeignLangModelListner);
+
     }
 
     @Override
@@ -231,8 +282,9 @@ public class ImageTranslationActivity extends AppCompatActivity implements View.
 
             // TODO (1): 9/28/2018 - Need to devise some plan and add support for langs to use in LanguageHints
             ImageContext imageContext = new ImageContext();
-            String[] langs = {"hi"};
-            imageContext.setLanguageHints(Arrays.asList(langs));
+//            String[] langs = {"hi"};
+            imageContext.setLanguageHints(Arrays.asList(langHints));
+            Log.i(TAG, "instance initializer: "+langHints[0]);
 
             annotateImageRequest.setImageContext(imageContext);
             // Add the list of one thing to the request
@@ -277,10 +329,13 @@ public class ImageTranslationActivity extends AppCompatActivity implements View.
             ImageTranslationActivity activity = mActivityWeakReference.get();
             if (activity != null && !activity.isFinishing()) {
                 TextView imageDetail = activity.findViewById(R.id.image_details);
-                ProgressBar mImageResultProgress = activity.findViewById(R.id.pg_img_details);
+//                ProgressBar mImageResultProgress = activity.findViewById(R.id.pg_img_details);
+                imageDetail.setText(R.string.getting_translations_message);
 
-                mImageResultProgress.setVisibility(View.INVISIBLE);
-                imageDetail.setText(result);
+                activity.GoogleTranslation(result,activity.mForeignLanguageModel.getYandexCode(),
+                        activity.mNativeLanguageModel.getYandexCode());
+
+//                mImageResultProgress.setVisibility(View.INVISIBLE);
 
             }
         }
@@ -322,7 +377,8 @@ public class ImageTranslationActivity extends AppCompatActivity implements View.
     }
 
     private static String convertResponseToString(BatchAnnotateImagesResponse response) {
-        StringBuilder message = new StringBuilder("Here are your results:\n\n");
+//        StringBuilder message = new StringBuilder("Here are your results:\n\n");
+        StringBuilder message = new StringBuilder();
 
         List<EntityAnnotation> labels = response.getResponses().get(0).getTextAnnotations();
         if (labels != null) {
@@ -337,5 +393,49 @@ public class ImageTranslationActivity extends AppCompatActivity implements View.
         }
 
         return message.toString();
+    }
+
+    void GoogleTranslation(String sourceText, String sourceLanguage, String targetLanguage) {
+        String translationResult = null; // Returns the translated text as a String
+        try {
+            translationResult = new GoogleTextTranslationTask(this).execute(sourceText, sourceLanguage, targetLanguage).get();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        Log.i("G-Translation Result", translationResult);
+    }
+
+    class GoogleTextTranslationTask extends AsyncTask<String, Void, String> {
+
+        private final WeakReference<ImageTranslationActivity> mActivityWeakReference;
+
+        GoogleTextTranslationTask(ImageTranslationActivity activity){
+            mActivityWeakReference = new WeakReference<>(activity);
+        }
+        @Override
+        protected String doInBackground(String... strings) {
+            networkUtils = new NetworkUtils();
+            String Result = networkUtils.GoogleTextTranslationREST(strings[0], strings[1], strings[2]);
+            if (Result != null && !Result.equals("")) {
+                return Result;
+            }
+            return "Got Nothing!";
+        }
+
+        @Override
+        protected void onPostExecute(String translatedText) {
+            super.onPostExecute(translatedText);
+            ImageTranslationActivity activity = mActivityWeakReference.get();
+            if (activity != null && !activity.isFinishing()) {
+                TextView imageDetail = activity.findViewById(R.id.image_details);
+                ProgressBar mImageResultProgress = activity.findViewById(R.id.pg_img_details);
+
+                mImageResultProgress.setVisibility(View.INVISIBLE);
+                imageDetail.setText(translatedText);
+
+            }
+        }
     }
 }

@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.globalrescue.mzafar.pocbeta_1.R;
@@ -56,6 +57,7 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
     private Button btnNativeText;
     private Button btnForeignText;
     private ImageButton btnPlayAudio;
+    private ProgressBar pgPlayingAudio;
 
     private TextView logs;
 
@@ -69,21 +71,13 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
     private boolean isNativeToForeignConversion;
 
     private TTS ttsService;
-//    private AudioPlayer player;
-//    private Audio receivedAudio;
-
-    /*
-    TTS Related Attributes - Start
-     */
-//    private Session speechSession;
-//    private Transaction ttsTransaction;
-//    private State state = State.IDLE;
-    /*
-    TTS Related Attributes - End
-     */
 
     //Default Constructor Instance for DataUtil Class
     private DataUtil dataUtilDefault;
+
+    /*
+    Callback Listeners/handlers
+     */
 
     DataUtil.FirebaseDataListner NativeLangModelListner = new DataUtil.FirebaseDataListner() {
         @Override
@@ -187,8 +181,7 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
         @Override
         public void onBeginPlaying(AudioPlayer audioPlayer, Audio audio) {
             Log.i(TAG, "\nonBeginPlaying");
-//            player = audioPlayer;
-//            receivedAudio = audio;
+
             ttsService.setTtsTransaction(null);
 
             //The TTS Audio will begin playing.
@@ -202,7 +195,7 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
 
             //The TTS Audio has finished playing
             ttsService.setState(TTS.State.IDLE);
-//            ttsService = null;
+            pgPlayingAudio.setVisibility(View.INVISIBLE);
         }
     };
 
@@ -219,6 +212,7 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
         btnNativeText = findViewById(R.id.btn_native_keyboard);
         btnForeignText = findViewById(R.id.btn_foreign_keyboard);
         btnPlayAudio = findViewById(R.id.btn_play_audio);
+        pgPlayingAudio = findViewById(R.id.pg_play_audio);
 
         btnNativeAudio.setOnClickListener(this);
         btnForeignAudio.setOnClickListener(this);
@@ -238,159 +232,12 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
         dataUtil.getLanguagenCodeFirestore(mForeignCountry.getCountry(), ForeignLangModelListner);
 
         logs = findViewById(R.id.logs);
-        /*
-        TTS Related Methods/Properties - Start
-         */
-        //Create a session
-//        speechSession = Session.Factory.session(this, Configuration.SERVER_URI, Configuration.APP_KEY);
-//        speechSession.getAudioPlayer().setListener(this);
-//
-//        setState(State.IDLE);
-        /*
-        TTS Related Methods/Properties - End
-         */
-
     }
 
     @Override
     protected void onStart() {
         super.onStart();
     }
-
-    /*
-        TTS Related Methods - Start
-     */
-
-    /* TTS transactions */
-
-//    private void toggleTTS() {
-//        switch (state) {
-//            case IDLE:
-//                //If we are not loading TTS from the server, then we should do so.
-//                if (ttsTransaction == null) {
-//                    //toggleTTS.setText(getResources().getString(R.string.cancel));
-//                    synthesize();
-//                }
-//                //Otherwise lets attempt to cancel that transaction
-//                else {
-//                    cancel();
-//                }
-//                break;
-//            case PLAYING:
-//                speechSession.getAudioPlayer().pause();
-//                setState(State.PAUSED);
-//                break;
-//            case PAUSED:
-//                speechSession.getAudioPlayer().play();
-//                setState(State.PLAYING);
-//                break;
-//        }
-//    }
-
-//    private void synthesize() {
-//        //Setup our TTS transaction options.
-//        Transaction.Options options = new Transaction.Options();
-//        if (isNativeToForeignConversion) {
-//            options.setLanguage(new Language(mNativeLanguageModel.getNuanceCode()));
-//        } else {
-//            options.setLanguage(new Language(mForeignLanguageModel.getNuanceCode()));
-//        }
-//        Log.i(TAG, options.getLanguage().toString());
-////        options.setAutoplay(false);
-//        //options.setVoice(new Voice(Voice.SAMANTHA)); //optionally change the Voice of the speaker, but will use the default if omitted.
-//
-//        //Start a TTS transaction
-//        ttsTransaction = speechSession.speakString(getTranslatedText(), options, new Transaction.Listener() {
-//            @Override
-//            public void onAudio(Transaction transaction, Audio audio) {
-//                Log.i(TAG, "\nonAudio");
-//
-////                The TTS audio has returned from the server, and has begun auto-playing.
-//                ttsTransaction = null;
-////                toggleTTS.setText(getResources().getString(R.string.speak_string));
-//            }
-//
-//            @Override
-//            public void onSuccess(Transaction transaction, String s) {
-//                Log.i(TAG, "\nonSuccess");
-//
-//                //Notification of a successful transaction. Nothing to do here.
-//            }
-//
-//            @Override
-//            public void onError(Transaction transaction, String s, TransactionException e) {
-//                Log.i(TAG, "\nonError: " + e.getMessage() + ". " + s);
-//
-//                //Something went wrong. Check Configuration.java to ensure that your settings are correct.
-//                //The user could also be offline, so be sure to handle this case appropriately.
-//
-//                ttsTransaction = null;
-//            }
-//        });
-//    }
-
-    /**
-     * Cancel the TTS transaction.
-     * This will only cancel if we have not received the audio from the server yet.
-     */
-//    private void cancel() {
-//        ttsTransaction.cancel();
-//    }
-
-//    @Override
-//    public void onBeginPlaying(AudioPlayer audioPlayer, Audio audio) {
-//        Log.i(TAG, "\nonBeginPlaying");
-////        audioPlayer.enqueue(audio);
-////        audioPlayer.play();
-////        audioPlayer.dequeue(audio);
-//        ttsTransaction = null;
-//
-//        //The TTS Audio will begin playing.
-//
-//        setState(State.PLAYING);
-//    }
-
-//    @Override
-//    public void onFinishedPlaying(AudioPlayer audioPlayer, Audio audio) {
-//        Log.i(TAG, "\nonFinishedPlaying");
-//
-//        //The TTS Audio has finished playing
-//
-//        setState(State.IDLE);
-//    }
-
-    /* State Logic: IDLE <-> PLAYING <-> PAUSED */
-
-//    private enum State {
-//        IDLE,
-//        PLAYING,
-//        PAUSED
-//    }
-
-    /**
-     * Set the state and update the button text.
-     */
-//    private void setState(State newState) {
-//        state = newState;
-//        switch (newState) {
-//            case IDLE:
-//                // Next possible action is speaking
-////                toggleTTS.setText(getResources().getString(R.string.speak_string));
-//                break;
-//            case PLAYING:
-//                // Next possible action is pausing
-////                toggleTTS.setText(getResources().getString(R.string.pause));
-//                break;
-//            case PAUSED:
-//                // Next possible action is resuming the speech
-////                toggleTTS.setText(getResources().getString(R.string.speak_string));
-//                break;
-//        }
-//    }
-
-    /*
-        TTS Related Methods - End
-     */
 
     public String getTranslatedText() {
         return translatedText;
@@ -460,8 +307,10 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
                     setPreviousText(getTranslatedText());
                     ttsService = new TTS(this, audioPlayerListener, isNativeToForeignConversion,
                             mNativeLanguageModel, mForeignLanguageModel, getTranslatedText());
+                    pgPlayingAudio.setVisibility(View.VISIBLE);
                     ttsService.toggleTTS();
                 }else{
+                    pgPlayingAudio.setVisibility(View.VISIBLE);
                     ttsService.toggleTTS();
                 }
                 break;
@@ -471,8 +320,6 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
 
 
     }
-
-
 
     public String getPreviousText() {
         return previousText;

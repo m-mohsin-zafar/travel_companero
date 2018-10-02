@@ -80,13 +80,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent=".08" />
+        app:layout_constraintGuide_percent=".09" />
     <android.support.constraint.Guideline
         android:id="@+id/guideline9"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent=".45" />
+        app:layout_constraintGuide_percent=".50" />
 
     <FrameLayout
         android:id="@+id/img_translation_results_container"

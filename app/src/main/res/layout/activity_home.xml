@@ -82,10 +82,8 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="4"
-                android:paddingBottom="8dp"
                 android:paddingEnd="4dp"
                 android:paddingStart="4dp"
-                android:paddingTop="8dp"
                 android:textColor="@color/Gray50"
                 android:layout_gravity="center_vertical"
                 android:gravity="center_vertical"
@@ -101,7 +99,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.11" />
+        app:layout_constraintGuide_percent="0.12" />
 
 
 </android.support.constraint.ConstraintLayout>

@@ -34,7 +34,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent=".09" />
+        app:layout_constraintGuide_percent=".10" />
 
     <Button
         android:id="@+id/btn_native_keyboard"
@@ -150,14 +150,13 @@
 
         <android.support.v7.widget.CardView
             android:id="@+id/cardView2"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"
             android:layout_marginStart="8dp"
             app:cardBackgroundColor="@color/PrimaryLight"
             app:cardCornerRadius="12dp"
-            app:cardElevation="4dp"
-            app:layout_constraintEnd_toStartOf="@+id/guideline4"
+            app:cardElevation="5dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
@@ -168,8 +167,7 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:padding="6dp"
-                android:text="@string/translation_results"
-                android:textSize="16sp" />
+                android:text="@string/translation_results" />
 
         </android.support.v7.widget.CardView>
 
@@ -177,7 +175,6 @@
             android:id="@+id/cardView3"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_marginTop="2dp"
             app:cardBackgroundColor="@color/Amber600"
             app:cardCornerRadius="12dp"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -213,27 +210,17 @@
             android:visibility="invisible"
             />
 
+        <ProgressBar
+            android:id="@+id/pg_play_audio"
+            style="?android:attr/progressBarStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toTopOf="@+id/cardView3"
+            app:layout_constraintEnd_toStartOf="@+id/btn_play_audio"
+            app:layout_constraintTop_toTopOf="parent"
+            android:indeterminate="true"
+            android:visibility="invisible"/>
+
     </android.support.constraint.ConstraintLayout>
-
-    <!--<FrameLayout-->
-    <!--android:layout_width="0dp"-->
-    <!--android:layout_height="0dp"-->
-    <!--android:layout_marginEnd="8dp"-->
-    <!--android:layout_marginStart="8dp"-->
-    <!--android:layout_marginTop="8dp"-->
-    <!--android:id="@+id/translator_output_container"-->
-    <!--app:layout_constraintBottom_toTopOf="@+id/guideline3"-->
-    <!--app:layout_constraintEnd_toEndOf="parent"-->
-    <!--app:layout_constraintStart_toStartOf="parent"-->
-    <!--app:layout_constraintTop_toTopOf="@+id/guideline7">-->
-
-    <!--<ProgressBar-->
-    <!--android:id="@+id/volume_bar"-->
-    <!--style="?android:attr/progressBarStyleHorizontal"-->
-    <!--android:layout_width="match_parent"-->
-    <!--android:layout_height="5dp" />-->
-
-
-    <!--</FrameLayout>-->
 
 </android.support.constraint.ConstraintLayout>
