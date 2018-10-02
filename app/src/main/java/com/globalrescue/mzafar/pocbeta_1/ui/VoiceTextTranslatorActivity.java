@@ -19,6 +19,7 @@ import com.globalrescue.mzafar.pocbeta_1.R;
 import com.globalrescue.mzafar.pocbeta_1.models.CountryModel;
 import com.globalrescue.mzafar.pocbeta_1.models.LanguageModel;
 import com.globalrescue.mzafar.pocbeta_1.nuance.Configuration;
+import com.globalrescue.mzafar.pocbeta_1.nuance.TTS;
 import com.globalrescue.mzafar.pocbeta_1.utilities.DataUtil;
 import com.globalrescue.mzafar.pocbeta_1.utilities.NetworkUtils;
 import com.globalrescue.mzafar.pocbeta_1.utilities.PermissionUtil;
@@ -33,7 +34,7 @@ import com.nuance.speechkit.TransactionException;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-public class VoiceTextTranslatorActivity extends AppCompatActivity implements View.OnClickListener, AudioPlayer.Listener, ActivityCompat.OnRequestPermissionsResultCallback {
+public class VoiceTextTranslatorActivity extends AppCompatActivity implements View.OnClickListener, ActivityCompat.OnRequestPermissionsResultCallback {
 
     private static final String TAG = "VTTranslator";
 
@@ -45,8 +46,10 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
     private CountryModel mForeignCountry;
     private LanguageModel mNativeLanguageModel;
     private LanguageModel mForeignLanguageModel;
-    private String NativeToForeignYandexCode;
-    private String ForeignToNativeYandexCode;
+
+    //Needed for Yandex API
+//    private String NativeToForeignYandexCode;
+//    private String ForeignToNativeYandexCode;
 
     private Button btnNativeAudio;
     private Button btnForeignAudio;
@@ -61,15 +64,20 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
     NetworkUtils networkUtils;
     String recognizedResult;
     private String translatedText;
+    private String previousText;
     //A Check flag for Audio Player API to know which Conversion Code to use;
     private boolean isNativeToForeignConversion;
+
+    private TTS ttsService;
+//    private AudioPlayer player;
+//    private Audio receivedAudio;
 
     /*
     TTS Related Attributes - Start
      */
-    private Session speechSession;
-    private Transaction ttsTransaction;
-    private State state = State.IDLE;
+//    private Session speechSession;
+//    private Transaction ttsTransaction;
+//    private State state = State.IDLE;
     /*
     TTS Related Attributes - End
      */
@@ -97,9 +105,9 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
             mForeignLanguageModel = (LanguageModel) tClass;
 
             //Setting up Yandex Codes for Text to Text Translation
-            dataUtilDefault = new DataUtil();
-            NativeToForeignYandexCode = mNativeLanguageModel.getYandexCode() + "-" + mForeignLanguageModel.getYandexCode();
-            ForeignToNativeYandexCode = dataUtilDefault.getReverseCode(NativeToForeignYandexCode);
+//            dataUtilDefault = new DataUtil();
+//            NativeToForeignYandexCode = mNativeLanguageModel.getYandexCode() + "-" + mForeignLanguageModel.getYandexCode();
+//            ForeignToNativeYandexCode = dataUtilDefault.getReverseCode(NativeToForeignYandexCode);
         }
 
         @Override
@@ -114,13 +122,13 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
             Log.i(TAG, "sendInputTextFromAudio(): input = " + input);
             logs.append(input + " = \n");
 
-            if(!isNativeToForeignConversion){
+            if (!isNativeToForeignConversion) {
                 isNativeToForeignConversion = true;
             }
             //Default variables for translation
             recognizedResult = input;
             //Executing the translation function
-            GoogleTranslation(recognizedResult, mNativeLanguageModel.getYandexCode(),mForeignLanguageModel.getYandexCode());
+            GoogleTranslation(recognizedResult, mNativeLanguageModel.getYandexCode(), mForeignLanguageModel.getYandexCode());
         }
     };
 
@@ -130,14 +138,14 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
             Log.i(TAG, "sendInputTextFromAudio(): input = " + input);
             logs.append(input + " = \n");
 
-            if(isNativeToForeignConversion){
+            if (isNativeToForeignConversion) {
                 isNativeToForeignConversion = false;
             }
 
             //Default variables for translation
             recognizedResult = input;
             //Executing the translation function
-            GoogleTranslation(recognizedResult,mForeignLanguageModel.getYandexCode(),mNativeLanguageModel.getYandexCode());
+            GoogleTranslation(recognizedResult, mForeignLanguageModel.getYandexCode(), mNativeLanguageModel.getYandexCode());
         }
     };
 
@@ -148,8 +156,13 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
             logs.append(input + " = \n");
             //Default variables for translation
             String textToBeTranslated = input;
+
+            if (!isNativeToForeignConversion) {
+                isNativeToForeignConversion = true;
+            }
+
             //Executing the translation function
-            GoogleTranslation(textToBeTranslated, mNativeLanguageModel.getYandexCode(),mForeignLanguageModel.getYandexCode());
+            GoogleTranslation(textToBeTranslated, mNativeLanguageModel.getYandexCode(), mForeignLanguageModel.getYandexCode());
         }
     };
 
@@ -160,34 +173,39 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
             logs.append(input + " = \n");
             //Default variables for translation
             String textToBeTranslated = input;
+
+            if (isNativeToForeignConversion) {
+                isNativeToForeignConversion = false;
+            }
+
             //Executing the translation function
-            GoogleTranslation(textToBeTranslated,mForeignLanguageModel.getYandexCode(),mNativeLanguageModel.getYandexCode());
+            GoogleTranslation(textToBeTranslated, mForeignLanguageModel.getYandexCode(), mNativeLanguageModel.getYandexCode());
         }
     };
 
-    AudioPlayer.Listener nativeAudioPlayer = new AudioPlayer.Listener() {
+    AudioPlayer.Listener audioPlayerListener = new AudioPlayer.Listener() {
         @Override
         public void onBeginPlaying(AudioPlayer audioPlayer, Audio audio) {
+            Log.i(TAG, "\nonBeginPlaying");
+//            player = audioPlayer;
+//            receivedAudio = audio;
+            ttsService.setTtsTransaction(null);
 
+            //The TTS Audio will begin playing.
+
+            ttsService.setState(TTS.State.PLAYING);
         }
 
         @Override
         public void onFinishedPlaying(AudioPlayer audioPlayer, Audio audio) {
+            Log.i(TAG, "\nonFinishedPlaying");
 
+            //The TTS Audio has finished playing
+            ttsService.setState(TTS.State.IDLE);
+//            ttsService = null;
         }
     };
 
-    AudioPlayer.Listener foreignAudioPlayer = new AudioPlayer.Listener() {
-        @Override
-        public void onBeginPlaying(AudioPlayer audioPlayer, Audio audio) {
-
-        }
-
-        @Override
-        public void onFinishedPlaying(AudioPlayer audioPlayer, Audio audio) {
-
-        }
-    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -216,18 +234,18 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
 
 //        dataUtil.getLanguagenCode(dataUtil.getFirebaseDBRefernce("languages"), mNativeCountry.getCountry(), NativeLangModelListner);
 //        dataUtil.getLanguagenCode(dataUtil.getFirebaseDBRefernce("languages"), mForeignCountry.getCountry(), ForeignLangModelListner);
-        dataUtil.getLanguagenCodeFirestore(mNativeCountry.getCountry(),NativeLangModelListner);
-        dataUtil.getLanguagenCodeFirestore(mForeignCountry.getCountry(),ForeignLangModelListner);
+        dataUtil.getLanguagenCodeFirestore(mNativeCountry.getCountry(), NativeLangModelListner);
+        dataUtil.getLanguagenCodeFirestore(mForeignCountry.getCountry(), ForeignLangModelListner);
 
         logs = findViewById(R.id.logs);
         /*
         TTS Related Methods/Properties - Start
          */
         //Create a session
-        speechSession = Session.Factory.session(this, Configuration.SERVER_URI, Configuration.APP_KEY);
-        speechSession.getAudioPlayer().setListener(this);
-
-        setState(State.IDLE);
+//        speechSession = Session.Factory.session(this, Configuration.SERVER_URI, Configuration.APP_KEY);
+//        speechSession.getAudioPlayer().setListener(this);
+//
+//        setState(State.IDLE);
         /*
         TTS Related Methods/Properties - End
          */
@@ -245,130 +263,130 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
 
     /* TTS transactions */
 
-    private void toggleTTS() {
-        switch (state) {
-            case IDLE:
-                //If we are not loading TTS from the server, then we should do so.
-                if (ttsTransaction == null) {
-                    //toggleTTS.setText(getResources().getString(R.string.cancel));
-                    synthesize();
-                }
-                //Otherwise lets attempt to cancel that transaction
-                else {
-                    cancel();
-                }
-                break;
-            case PLAYING:
-                speechSession.getAudioPlayer().pause();
-                setState(State.PAUSED);
-                break;
-            case PAUSED:
-                speechSession.getAudioPlayer().play();
-                setState(State.PLAYING);
-                break;
-        }
-    }
+//    private void toggleTTS() {
+//        switch (state) {
+//            case IDLE:
+//                //If we are not loading TTS from the server, then we should do so.
+//                if (ttsTransaction == null) {
+//                    //toggleTTS.setText(getResources().getString(R.string.cancel));
+//                    synthesize();
+//                }
+//                //Otherwise lets attempt to cancel that transaction
+//                else {
+//                    cancel();
+//                }
+//                break;
+//            case PLAYING:
+//                speechSession.getAudioPlayer().pause();
+//                setState(State.PAUSED);
+//                break;
+//            case PAUSED:
+//                speechSession.getAudioPlayer().play();
+//                setState(State.PLAYING);
+//                break;
+//        }
+//    }
 
-    private void synthesize() {
-        //Setup our TTS transaction options.
-        Transaction.Options options = new Transaction.Options();
-        if(isNativeToForeignConversion){
-            options.setLanguage(new Language(mNativeLanguageModel.getNuanceCode()));
-        }else {
-            options.setLanguage(new Language(mForeignLanguageModel.getNuanceCode()));
-        }
-        Log.i(TAG,options.getLanguage().toString());
-//        options.setAutoplay(false);
-        //options.setVoice(new Voice(Voice.SAMANTHA)); //optionally change the Voice of the speaker, but will use the default if omitted.
-
-        //Start a TTS transaction
-        ttsTransaction = speechSession.speakString(getTranslatedText(), options, new Transaction.Listener() {
-            @Override
-            public void onAudio(Transaction transaction, Audio audio) {
-                Log.i(TAG, "\nonAudio");
-
-//                The TTS audio has returned from the server, and has begun auto-playing.
-                ttsTransaction = null;
-//                toggleTTS.setText(getResources().getString(R.string.speak_string));
-            }
-
-            @Override
-            public void onSuccess(Transaction transaction, String s) {
-                Log.i(TAG, "\nonSuccess");
-
-                //Notification of a successful transaction. Nothing to do here.
-            }
-
-            @Override
-            public void onError(Transaction transaction, String s, TransactionException e) {
-                Log.i(TAG, "\nonError: " + e.getMessage() + ". " + s);
-
-                //Something went wrong. Check Configuration.java to ensure that your settings are correct.
-                //The user could also be offline, so be sure to handle this case appropriately.
-
-                ttsTransaction = null;
-            }
-        });
-    }
+//    private void synthesize() {
+//        //Setup our TTS transaction options.
+//        Transaction.Options options = new Transaction.Options();
+//        if (isNativeToForeignConversion) {
+//            options.setLanguage(new Language(mNativeLanguageModel.getNuanceCode()));
+//        } else {
+//            options.setLanguage(new Language(mForeignLanguageModel.getNuanceCode()));
+//        }
+//        Log.i(TAG, options.getLanguage().toString());
+////        options.setAutoplay(false);
+//        //options.setVoice(new Voice(Voice.SAMANTHA)); //optionally change the Voice of the speaker, but will use the default if omitted.
+//
+//        //Start a TTS transaction
+//        ttsTransaction = speechSession.speakString(getTranslatedText(), options, new Transaction.Listener() {
+//            @Override
+//            public void onAudio(Transaction transaction, Audio audio) {
+//                Log.i(TAG, "\nonAudio");
+//
+////                The TTS audio has returned from the server, and has begun auto-playing.
+//                ttsTransaction = null;
+////                toggleTTS.setText(getResources().getString(R.string.speak_string));
+//            }
+//
+//            @Override
+//            public void onSuccess(Transaction transaction, String s) {
+//                Log.i(TAG, "\nonSuccess");
+//
+//                //Notification of a successful transaction. Nothing to do here.
+//            }
+//
+//            @Override
+//            public void onError(Transaction transaction, String s, TransactionException e) {
+//                Log.i(TAG, "\nonError: " + e.getMessage() + ". " + s);
+//
+//                //Something went wrong. Check Configuration.java to ensure that your settings are correct.
+//                //The user could also be offline, so be sure to handle this case appropriately.
+//
+//                ttsTransaction = null;
+//            }
+//        });
+//    }
 
     /**
      * Cancel the TTS transaction.
      * This will only cancel if we have not received the audio from the server yet.
      */
-    private void cancel() {
-        ttsTransaction.cancel();
-    }
+//    private void cancel() {
+//        ttsTransaction.cancel();
+//    }
 
-    @Override
-    public void onBeginPlaying(AudioPlayer audioPlayer, Audio audio) {
-        Log.i(TAG, "\nonBeginPlaying");
-//        audioPlayer.enqueue(audio);
-//        audioPlayer.play();
-//        audioPlayer.dequeue(audio);
-        ttsTransaction=null;
+//    @Override
+//    public void onBeginPlaying(AudioPlayer audioPlayer, Audio audio) {
+//        Log.i(TAG, "\nonBeginPlaying");
+////        audioPlayer.enqueue(audio);
+////        audioPlayer.play();
+////        audioPlayer.dequeue(audio);
+//        ttsTransaction = null;
+//
+//        //The TTS Audio will begin playing.
+//
+//        setState(State.PLAYING);
+//    }
 
-        //The TTS Audio will begin playing.
-
-        setState(State.PLAYING);
-    }
-
-    @Override
-    public void onFinishedPlaying(AudioPlayer audioPlayer, Audio audio) {
-        Log.i(TAG, "\nonFinishedPlaying");
-
-        //The TTS Audio has finished playing
-
-        setState(State.IDLE);
-    }
+//    @Override
+//    public void onFinishedPlaying(AudioPlayer audioPlayer, Audio audio) {
+//        Log.i(TAG, "\nonFinishedPlaying");
+//
+//        //The TTS Audio has finished playing
+//
+//        setState(State.IDLE);
+//    }
 
     /* State Logic: IDLE <-> PLAYING <-> PAUSED */
 
-    private enum State {
-        IDLE,
-        PLAYING,
-        PAUSED
-    }
+//    private enum State {
+//        IDLE,
+//        PLAYING,
+//        PAUSED
+//    }
 
     /**
      * Set the state and update the button text.
      */
-    private void setState(State newState) {
-        state = newState;
-        switch (newState) {
-            case IDLE:
-                // Next possible action is speaking
-//                toggleTTS.setText(getResources().getString(R.string.speak_string));
-                break;
-            case PLAYING:
-                // Next possible action is pausing
-//                toggleTTS.setText(getResources().getString(R.string.pause));
-                break;
-            case PAUSED:
-                // Next possible action is resuming the speech
-//                toggleTTS.setText(getResources().getString(R.string.speak_string));
-                break;
-        }
-    }
+//    private void setState(State newState) {
+//        state = newState;
+//        switch (newState) {
+//            case IDLE:
+//                // Next possible action is speaking
+////                toggleTTS.setText(getResources().getString(R.string.speak_string));
+//                break;
+//            case PLAYING:
+//                // Next possible action is pausing
+////                toggleTTS.setText(getResources().getString(R.string.pause));
+//                break;
+//            case PAUSED:
+//                // Next possible action is resuming the speech
+////                toggleTTS.setText(getResources().getString(R.string.speak_string));
+//                break;
+//        }
+//    }
 
     /*
         TTS Related Methods - End
@@ -389,9 +407,9 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
             case R.id.btn_native_audio:
                 Log.i(TAG, "onClick -> NativeAudioButton");
 
-                if(ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
-                        != PackageManager.PERMISSION_GRANTED ||  ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                        != PackageManager.PERMISSION_GRANTED){
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+                        != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        != PackageManager.PERMISSION_GRANTED) {
 
                     Log.i(TAG, "onClick: Permissions not granted...");
                     requestAudioAndStoragePermission();
@@ -405,9 +423,9 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
             case R.id.btn_foreign_audio:
                 Log.i(TAG, "onClick -> ForeignAudioButton");
 
-                if(ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
-                        != PackageManager.PERMISSION_GRANTED ||  ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                        != PackageManager.PERMISSION_GRANTED){
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+                        != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        != PackageManager.PERMISSION_GRANTED) {
 
                     Log.i(TAG, "onClick: Permissions not granted...");
                     requestAudioAndStoragePermission();
@@ -431,7 +449,21 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
 
                 break;
             case R.id.btn_play_audio:
-                toggleTTS();
+
+                if(!getTranslatedText().equals(getPreviousText())){
+
+                    Log.i(TAG, "onClick: Play Audio -> if Condition = true");
+
+                    if(ttsService != null){
+                        ttsService = null;
+                    }
+                    setPreviousText(getTranslatedText());
+                    ttsService = new TTS(this, audioPlayerListener, isNativeToForeignConversion,
+                            mNativeLanguageModel, mForeignLanguageModel, getTranslatedText());
+                    ttsService.toggleTTS();
+                }else{
+                    ttsService.toggleTTS();
+                }
                 break;
             default:
                 break;
@@ -440,7 +472,17 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
 
     }
 
-    void GoogleTranslation(String sourceText, String sourceLanguage, String targetLanguage){
+
+
+    public String getPreviousText() {
+        return previousText;
+    }
+
+    public void setPreviousText(String previousText) {
+        this.previousText = previousText;
+    }
+
+    void GoogleTranslation(String sourceText, String sourceLanguage, String targetLanguage) {
         String translationResult = null; // Returns the translated text as a String
         try {
             translationResult = new GoogleTextTranslationTask().execute(sourceText, sourceLanguage, targetLanguage).get();
@@ -451,12 +493,13 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
         }
         Log.i("G-Translation Result", translationResult);
     }
+
     class GoogleTextTranslationTask extends AsyncTask<String, Void, String> {
 
         @Override
         protected String doInBackground(String... strings) {
             networkUtils = new NetworkUtils();
-            String Result = networkUtils.GoogleTextTranslationREST(strings[0],strings[1],strings[2]);
+            String Result = networkUtils.GoogleTextTranslationREST(strings[0], strings[1], strings[2]);
             if (Result != null && !Result.equals("")) {
                 return Result;
             }
@@ -522,7 +565,7 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
     /**
      * Method for Displaying Text Input Dialog Fragment
      */
-    private void displayTextInputDialog(TextInputDialog.onInputTextListener listener){
+    private void displayTextInputDialog(TextInputDialog.onInputTextListener listener) {
 
         TextInputDialog mTextInputDialog = new TextInputDialog();
         FragmentManager mFragmentManager = this.getSupportFragmentManager();
@@ -536,7 +579,7 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
     /**
      * Method for Displaying Audio Input Dialog Fragment
      */
-    private void displayAudioInputDialog(String nuanceCode, AudioInputDialog.onInputAudioListener listener){
+    private void displayAudioInputDialog(String nuanceCode, AudioInputDialog.onInputAudioListener listener) {
         AudioInputDialog mAudioInputDialog = new AudioInputDialog();
         FragmentManager mFragmentManager = this.getSupportFragmentManager();
         Bundle args = new Bundle();
@@ -552,14 +595,14 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
     /**
      * Methods for Handling Audio and Storage Permissions
      */
-    private void requestAudioAndStoragePermission(){
+    private void requestAudioAndStoragePermission() {
 
-        if(ActivityCompat.shouldShowRequestPermissionRationale(VoiceTextTranslatorActivity.this,Manifest.permission.WRITE_EXTERNAL_STORAGE) ||
-                ActivityCompat.shouldShowRequestPermissionRationale(VoiceTextTranslatorActivity.this, Manifest.permission.RECORD_AUDIO)){
+        if (ActivityCompat.shouldShowRequestPermissionRationale(VoiceTextTranslatorActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) ||
+                ActivityCompat.shouldShowRequestPermissionRationale(VoiceTextTranslatorActivity.this, Manifest.permission.RECORD_AUDIO)) {
 
             Log.i(TAG, "requestAudioAndStoragePermission: Displaying Permissions Rationale with Additional Information...");
 
-            Snackbar.make(mLayout,R.string.permissions_audio_storage_rationale, Snackbar.LENGTH_INDEFINITE)
+            Snackbar.make(mLayout, R.string.permissions_audio_storage_rationale, Snackbar.LENGTH_INDEFINITE)
                     .setAction(R.string.ok, new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
@@ -575,14 +618,14 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == REQUEST_AUDIO_N_STORAGE){
+        if (requestCode == REQUEST_AUDIO_N_STORAGE) {
             Log.i(TAG, "onRequestPermissionsResult: Received Response for Audio and Storage Request");
 
-            if (PermissionUtil.verifyPermissions(grantResults)){
-                Snackbar.make(mLayout,R.string.permissions_audio_storage_granted, Snackbar.LENGTH_SHORT).show();
+            if (PermissionUtil.verifyPermissions(grantResults)) {
+                Snackbar.make(mLayout, R.string.permissions_audio_storage_granted, Snackbar.LENGTH_SHORT).show();
             } else {
                 Log.i(TAG, "onRequestPermissionsResult: Permissions NOT granted");
-                Snackbar.make(mLayout,R.string.permissions_audio_storage_not_granted, Snackbar.LENGTH_SHORT).show();
+                Snackbar.make(mLayout, R.string.permissions_audio_storage_not_granted, Snackbar.LENGTH_SHORT).show();
             }
         } else {
             super.onRequestPermissionsResult(requestCode, permissions, grantResults);
