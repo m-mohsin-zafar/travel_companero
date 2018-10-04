@@ -1,12 +1,17 @@
 package com.globalrescue.mzafar.pocbeta_1.ui;
 
 import android.Manifest;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
 import android.os.AsyncTask;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentManager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -21,6 +26,8 @@ import com.globalrescue.mzafar.pocbeta_1.models.CountryModel;
 import com.globalrescue.mzafar.pocbeta_1.models.LanguageModel;
 import com.globalrescue.mzafar.pocbeta_1.nuance.Configuration;
 import com.globalrescue.mzafar.pocbeta_1.nuance.TTS;
+import com.globalrescue.mzafar.pocbeta_1.root.TravelCompanero;
+import com.globalrescue.mzafar.pocbeta_1.utilities.ConnectivityReceiver;
 import com.globalrescue.mzafar.pocbeta_1.utilities.DataUtil;
 import com.globalrescue.mzafar.pocbeta_1.utilities.NetworkUtils;
 import com.globalrescue.mzafar.pocbeta_1.utilities.PermissionUtil;
@@ -35,7 +42,8 @@ import com.nuance.speechkit.TransactionException;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-public class VoiceTextTranslatorActivity extends AppCompatActivity implements View.OnClickListener, ActivityCompat.OnRequestPermissionsResultCallback {
+public class VoiceTextTranslatorActivity extends AppCompatActivity implements View.OnClickListener,
+        ActivityCompat.OnRequestPermissionsResultCallback, ConnectivityReceiver.ConnectivityReceiverListener {
 
     private static final String TAG = "VTTranslator";
 
@@ -71,6 +79,8 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
     private boolean isNativeToForeignConversion;
 
     private TTS ttsService;
+
+    private AlertDialog connectionAlert;
 
     //Default Constructor Instance for DataUtil Class
     private DataUtil dataUtilDefault;
@@ -232,11 +242,66 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
         dataUtil.getLanguagenCodeFirestore(mForeignCountry.getCountry(), ForeignLangModelListner);
 
         logs = findViewById(R.id.logs);
+
+        checkConnection();
     }
 
     @Override
     protected void onStart() {
         super.onStart();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        //Code for Listening to Connection Status Broadcast on Android N and Above
+
+        final IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+
+        ConnectivityReceiver connectivityReceiver = new ConnectivityReceiver();
+        registerReceiver(connectivityReceiver, intentFilter);
+
+        /*register connection status listener*/
+        TravelCompanero.getInstance().setConnectivityListener(this);
+    }
+
+    // Method to manually check connection status
+    private void checkConnection() {
+        boolean isConnected = ConnectivityReceiver.isConnected();
+        if(!isConnected){
+            Log.i(TAG, "checkConnection: Not Connected with Internet");
+            showConnectionAlert();
+        }
+    }
+
+    // Show an Alert in case Internet Connection is not Present
+    private void showConnectionAlert() {
+
+        if(connectionAlert != null){
+            connectionAlert.dismiss();
+        }
+        // Create an Alert Dialog
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        // Set the Alert Dialog Message
+        builder.setMessage("Internet Connection Required")
+                .setCancelable(false)
+                .setPositiveButton("Open Settings", (dialog, which) -> {
+                    Intent intent = new Intent(Settings.ACTION_SETTINGS);
+                    startActivity(intent);
+                })
+                .setNegativeButton("Retry",
+                        (dialog, id) -> {
+                            // Restart the Activity
+                            Intent intent = getIntent();
+                            finish();
+                            startActivity(intent);
+                        });
+
+        connectionAlert = builder.create();
+        connectionAlert.show();
+
     }
 
     public String getTranslatedText() {
@@ -478,5 +543,16 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
             super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
 
+    }
+
+    @Override
+    public void onNetworkConnectionChanged(boolean isConnected) {
+        Log.i(TAG, "onNetworkConnectionChanged: -> Network Status has changed -> Status: "+isConnected);
+        if(!isConnected) {
+            showConnectionAlert();
+        }
+        if(isConnected && (connectionAlert != null) ){
+            connectionAlert.dismiss();
+        }
     }
 }

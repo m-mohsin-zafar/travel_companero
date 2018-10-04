@@ -2,8 +2,13 @@ package com.globalrescue.mzafar.pocbeta_1.ui;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.ConnectivityManager;
+import android.provider.Settings;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -12,8 +17,13 @@ import android.widget.Toast;
 
 import com.globalrescue.mzafar.pocbeta_1.R;
 import com.globalrescue.mzafar.pocbeta_1.models.CountryModel;
+import com.globalrescue.mzafar.pocbeta_1.root.TravelCompanero;
+import com.globalrescue.mzafar.pocbeta_1.utilities.ConnectivityReceiver;
 
-public class HomeActivity extends AppCompatActivity implements View.OnClickListener {
+public class HomeActivity extends AppCompatActivity implements View.OnClickListener,
+        ConnectivityReceiver.ConnectivityReceiverListener{
+
+    private static final String TAG = "HomeActivity";
 
     private TextView mDestCountryTextView;
     private ImageView mCountryFlag;
@@ -22,6 +32,8 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
     private CountryModel mForeignCountryModel;
     private CountryModel mNativeCountryModel;
+
+    private AlertDialog connectionAlert;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +56,62 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         mDestCountryTextView.setText(mForeignCountryModel.getCountry());
         mCountryFlag.setImageResource(flagId);
 
+        //Manually Checking Internet Connection
+        checkConnection();
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        //Code for Listening to Connection Status Broadcast on Android N and Above
+
+        final IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+
+        ConnectivityReceiver connectivityReceiver = new ConnectivityReceiver();
+        registerReceiver(connectivityReceiver, intentFilter);
+
+        /*register connection status listener*/
+        TravelCompanero.getInstance().setConnectivityListener(this);
+    }
+
+    // Method to manually check connection status
+    private void checkConnection() {
+        boolean isConnected = ConnectivityReceiver.isConnected();
+        if(!isConnected){
+            Log.i(TAG, "checkConnection: Not Connected with Internet");
+            showConnectionAlert();
+        }
+    }
+
+    // Show an Alert in case Internet Connection is not Present
+    private void showConnectionAlert() {
+
+        if(connectionAlert != null){
+            connectionAlert.dismiss();
+        }
+        // Create an Alert Dialog
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        // Set the Alert Dialog Message
+        builder.setMessage("Internet Connection Required")
+                .setCancelable(false)
+                .setPositiveButton("Open Settings", (dialog, which) -> {
+                    Intent intent = new Intent(Settings.ACTION_SETTINGS);
+                    startActivity(intent);
+                })
+                .setNegativeButton("Retry",
+                        (dialog, id) -> {
+                            // Restart the Activity
+                            Intent intent = getIntent();
+                            finish();
+                            startActivity(intent);
+                        });
+
+        connectionAlert = builder.create();
+        connectionAlert.show();
+
     }
 
     @Override
@@ -64,6 +132,17 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             intent.putExtra("NATIVE_COUNTRY_MODEL",mNativeCountryModel);
             startActivity(intent);
 //            Toast.makeText(this, "This feature will be available in next release", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public void onNetworkConnectionChanged(boolean isConnected) {
+        Log.i(TAG, "onNetworkConnectionChanged: -> Network Status has changed -> Status: "+isConnected);
+        if(!isConnected) {
+            showConnectionAlert();
+        }
+        if(isConnected && (connectionAlert != null) ){
+            connectionAlert.dismiss();
         }
     }
 }

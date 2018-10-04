@@ -73,6 +73,11 @@ dependencies {
     implementation 'com.squareup.okhttp3:okhttp:3.11.0'
 //    implementation (group: 'com.google.guava', name: 'guava', version: '18.0')
 //    implementation ('com.google.guava:guava-jdk5:17.0') { force = true }
+    implementation 'com.google.dagger:dagger:2.10'
+    implementation 'com.google.dagger:dagger-android:2.10'
+    annotationProcessor 'com.google.dagger:dagger-android-processor:2.10'
+    annotationProcessor 'com.google.dagger:dagger-compiler:2.10'
+    implementation 'com.jakewharton:butterknife:8.5.1'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:8.5.1'
 }
-
 apply plugin: 'com.google.gms.google-services'

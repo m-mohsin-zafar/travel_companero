@@ -2,12 +2,15 @@ package com.globalrescue.mzafar.pocbeta_1.ui;
 
 import android.Manifest;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
+import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
@@ -24,6 +27,8 @@ import com.globalrescue.mzafar.pocbeta_1.R;
 import com.globalrescue.mzafar.pocbeta_1.models.CountryModel;
 import com.globalrescue.mzafar.pocbeta_1.models.GoogleTranslatePOSTRequestModel;
 import com.globalrescue.mzafar.pocbeta_1.models.LanguageModel;
+import com.globalrescue.mzafar.pocbeta_1.root.TravelCompanero;
+import com.globalrescue.mzafar.pocbeta_1.utilities.ConnectivityReceiver;
 import com.globalrescue.mzafar.pocbeta_1.utilities.DataUtil;
 import com.globalrescue.mzafar.pocbeta_1.utilities.NetworkUtils;
 import com.globalrescue.mzafar.pocbeta_1.utilities.PackageManagerUtils;
@@ -54,7 +59,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 
-public class ImageTranslationActivity extends AppCompatActivity implements View.OnClickListener {
+public class ImageTranslationActivity extends AppCompatActivity implements View.OnClickListener,
+        ConnectivityReceiver.ConnectivityReceiverListener{
 
     private static final String CLOUD_VISION_API_KEY = "AIzaSyCvIQEnhzPQ30Y55dHSYWn0HhrR45EDCQ4";
     public static final String FILE_NAME = "temp.jpg";
@@ -82,6 +88,8 @@ public class ImageTranslationActivity extends AppCompatActivity implements View.
     private DataUtil dataUtil;
     private NetworkUtils networkUtils;
     private String[] langHints = new String[1];
+
+    private AlertDialog connectionAlert;
 
     DataUtil.FirebaseDataListner NativeLangModelListner = new DataUtil.FirebaseDataListner() {
         @Override
@@ -129,6 +137,61 @@ public class ImageTranslationActivity extends AppCompatActivity implements View.
         dataUtil = new DataUtil();
         dataUtil.getLanguagenCodeFirestore(mNativeCountry.getCountry(), NativeLangModelListner);
         dataUtil.getLanguagenCodeFirestore(mForeignCountry.getCountry(), ForeignLangModelListner);
+
+        checkConnection();
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        //Code for Listening to Connection Status Broadcast on Android N and Above
+
+        final IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+
+        ConnectivityReceiver connectivityReceiver = new ConnectivityReceiver();
+        registerReceiver(connectivityReceiver, intentFilter);
+
+        /*register connection status listener*/
+        TravelCompanero.getInstance().setConnectivityListener(this);
+    }
+
+    // Method to manually check connection status
+    private void checkConnection() {
+        boolean isConnected = ConnectivityReceiver.isConnected();
+        if(!isConnected){
+            Log.i(TAG, "checkConnection: Not Connected with Internet");
+            showConnectionAlert();
+        }
+    }
+
+    // Show an Alert in case Internet Connection is not Present
+    private void showConnectionAlert() {
+
+        if(connectionAlert != null){
+            connectionAlert.dismiss();
+        }
+        // Create an Alert Dialog
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        // Set the Alert Dialog Message
+        builder.setMessage("Internet Connection Required")
+                .setCancelable(false)
+                .setPositiveButton("Open Settings", (dialog, which) -> {
+                    Intent intent = new Intent(Settings.ACTION_SETTINGS);
+                    startActivity(intent);
+                })
+                .setNegativeButton("Retry",
+                        (dialog, id) -> {
+                            // Restart the Activity
+                            Intent intent = getIntent();
+                            finish();
+                            startActivity(intent);
+                        });
+
+        connectionAlert = builder.create();
+        connectionAlert.show();
 
     }
 
@@ -436,6 +499,17 @@ public class ImageTranslationActivity extends AppCompatActivity implements View.
                 imageDetail.setText(translatedText);
 
             }
+        }
+    }
+
+    @Override
+    public void onNetworkConnectionChanged(boolean isConnected) {
+        Log.i(TAG, "onNetworkConnectionChanged: -> Network Status has changed -> Status: "+isConnected);
+        if(!isConnected) {
+            showConnectionAlert();
+        }
+        if(isConnected && (connectionAlert != null) ){
+            connectionAlert.dismiss();
         }
     }
 }
