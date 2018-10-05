@@ -10,6 +10,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.globalrescue.mzafar.pocbeta_1.R;
 import com.globalrescue.mzafar.pocbeta_1.adapters.LangsSelectionStatePagerAdapter;
@@ -31,6 +32,7 @@ public class MainActivity extends AppCompatActivity implements
 
     private AlertDialog connectionAlert;
 
+    private ConnectivityReceiver connectivityReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,11 +56,18 @@ public class MainActivity extends AppCompatActivity implements
         final IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
 
-        ConnectivityReceiver connectivityReceiver = new ConnectivityReceiver();
+        connectivityReceiver = new ConnectivityReceiver();
         registerReceiver(connectivityReceiver, intentFilter);
 
         /*register connection status listener*/
         TravelCompanero.getInstance().setConnectivityListener(this);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        unregisterReceiver(connectivityReceiver);
     }
 
     // Method to manually check connection status
@@ -110,12 +119,16 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     public void startHomeActivity(){
-        Context context = MainActivity.this;
-        Class destinationActivity = HomeActivity.class;
-        Intent intent = new Intent(context, destinationActivity);
-        intent.putExtra("FOREIGN_COUNTRY_MODEL", foreignCountry);
-        intent.putExtra("NATIVE_COUNTRY_MODEL", nativeCountry);
-        startActivity(intent);
+        if (foreignCountry != null && nativeCountry != null){
+            Context context = MainActivity.this;
+            Class destinationActivity = HomeActivity.class;
+            Intent intent = new Intent(context, destinationActivity);
+            intent.putExtra("FOREIGN_COUNTRY_MODEL", foreignCountry);
+            intent.putExtra("NATIVE_COUNTRY_MODEL", nativeCountry);
+            startActivity(intent);
+        } else{
+            Toast.makeText(this, "Something is wrong..", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private String getFragmentTag(int viewPagerId, int fragmentPosition)

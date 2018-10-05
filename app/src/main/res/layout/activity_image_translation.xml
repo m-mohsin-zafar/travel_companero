@@ -60,6 +60,18 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
+    <ImageButton
+        android:id="@+id/btn_play_audio_from_img"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:backgroundTint="@color/AmberA700"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:srcCompat="@drawable/ic_play_circle_outline_black_32dp"
+        android:visibility="invisible"/>
+
     <ImageView
         android:id="@+id/main_image"
         android:layout_width="0dp"
@@ -124,5 +136,6 @@
                     android:text="@string/image_translation_results"/>
             </LinearLayout>
         </ScrollView>
+
     </FrameLayout>
 </android.support.constraint.ConstraintLayout>

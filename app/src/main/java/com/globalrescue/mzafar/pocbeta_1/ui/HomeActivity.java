@@ -35,6 +35,8 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
     private AlertDialog connectionAlert;
 
+    private ConnectivityReceiver connectivityReceiver;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -70,11 +72,19 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         final IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
 
-        ConnectivityReceiver connectivityReceiver = new ConnectivityReceiver();
+
+        connectivityReceiver = new ConnectivityReceiver();
         registerReceiver(connectivityReceiver, intentFilter);
 
         /*register connection status listener*/
         TravelCompanero.getInstance().setConnectivityListener(this);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        unregisterReceiver(connectivityReceiver);
     }
 
     // Method to manually check connection status

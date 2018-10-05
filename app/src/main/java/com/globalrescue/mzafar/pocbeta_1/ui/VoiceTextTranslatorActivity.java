@@ -82,6 +82,8 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
 
     private AlertDialog connectionAlert;
 
+    private ConnectivityReceiver connectivityReceiver;
+
     //Default Constructor Instance for DataUtil Class
     private DataUtil dataUtilDefault;
 
@@ -260,11 +262,18 @@ public class VoiceTextTranslatorActivity extends AppCompatActivity implements Vi
         final IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
 
-        ConnectivityReceiver connectivityReceiver = new ConnectivityReceiver();
+        connectivityReceiver = new ConnectivityReceiver();
         registerReceiver(connectivityReceiver, intentFilter);
 
         /*register connection status listener*/
         TravelCompanero.getInstance().setConnectivityListener(this);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        unregisterReceiver(connectivityReceiver);
     }
 
     // Method to manually check connection status

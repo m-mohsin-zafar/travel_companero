@@ -18,6 +18,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -27,6 +28,7 @@ import com.globalrescue.mzafar.pocbeta_1.R;
 import com.globalrescue.mzafar.pocbeta_1.models.CountryModel;
 import com.globalrescue.mzafar.pocbeta_1.models.GoogleTranslatePOSTRequestModel;
 import com.globalrescue.mzafar.pocbeta_1.models.LanguageModel;
+import com.globalrescue.mzafar.pocbeta_1.nuance.TTS;
 import com.globalrescue.mzafar.pocbeta_1.root.TravelCompanero;
 import com.globalrescue.mzafar.pocbeta_1.utilities.ConnectivityReceiver;
 import com.globalrescue.mzafar.pocbeta_1.utilities.DataUtil;
@@ -48,6 +50,8 @@ import com.google.api.services.vision.v1.model.EntityAnnotation;
 import com.google.api.services.vision.v1.model.Feature;
 import com.google.api.services.vision.v1.model.Image;
 import com.google.api.services.vision.v1.model.ImageContext;
+import com.nuance.speechkit.Audio;
+import com.nuance.speechkit.AudioPlayer;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -79,6 +83,7 @@ public class ImageTranslationActivity extends AppCompatActivity implements View.
     private ImageView mMainImage;
     private ProgressBar mImageProgress;
     private Button mUploadImage;
+    private ImageButton mPlayAudio;
 
     private CountryModel mNativeCountry;
     private CountryModel mForeignCountry;
@@ -89,7 +94,15 @@ public class ImageTranslationActivity extends AppCompatActivity implements View.
     private NetworkUtils networkUtils;
     private String[] langHints = new String[1];
 
+    private String translatedText;
+    private String previousText;
+    private boolean isNativeToForeignConversion = false;
+
+    private TTS ttsService;
+
     private AlertDialog connectionAlert;
+
+    private ConnectivityReceiver connectivityReceiver;
 
     DataUtil.FirebaseDataListner NativeLangModelListner = new DataUtil.FirebaseDataListner() {
         @Override
@@ -118,6 +131,28 @@ public class ImageTranslationActivity extends AppCompatActivity implements View.
         }
     };
 
+    AudioPlayer.Listener audioPlayerListener = new AudioPlayer.Listener() {
+        @Override
+        public void onBeginPlaying(AudioPlayer audioPlayer, Audio audio) {
+            Log.i(TAG, "\nonBeginPlaying");
+
+            ttsService.setTtsTransaction(null);
+
+            //The TTS Audio will begin playing.
+
+            ttsService.setState(TTS.State.PLAYING);
+        }
+
+        @Override
+        public void onFinishedPlaying(AudioPlayer audioPlayer, Audio audio) {
+            Log.i(TAG, "\nonFinishedPlaying");
+
+            //The TTS Audio has finished playing
+            ttsService.setState(TTS.State.IDLE);
+            mImageProgress.setVisibility(View.INVISIBLE);
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -127,8 +162,10 @@ public class ImageTranslationActivity extends AppCompatActivity implements View.
         mMainImage = findViewById(R.id.main_image);
         mImageProgress = findViewById(R.id.pg_img_details);
         mUploadImage = findViewById(R.id.btn_upload_image);
+        mPlayAudio = findViewById(R.id.btn_play_audio_from_img);
 
         mUploadImage.setOnClickListener(this);
+        mPlayAudio.setOnClickListener(this);
 
         Bundle extraBundle = getIntent().getExtras();
         mNativeCountry = (CountryModel) extraBundle.getSerializable("NATIVE_COUNTRY_MODEL");
@@ -151,11 +188,18 @@ public class ImageTranslationActivity extends AppCompatActivity implements View.
         final IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
 
-        ConnectivityReceiver connectivityReceiver = new ConnectivityReceiver();
+        connectivityReceiver = new ConnectivityReceiver();
         registerReceiver(connectivityReceiver, intentFilter);
 
         /*register connection status listener*/
         TravelCompanero.getInstance().setConnectivityListener(this);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        unregisterReceiver(connectivityReceiver);
     }
 
     // Method to manually check connection status
@@ -204,6 +248,25 @@ public class ImageTranslationActivity extends AppCompatActivity implements View.
                     .setPositiveButton(R.string.dialog_select_gallery, (dialog, which) -> startGalleryChooser())
                     .setNegativeButton(R.string.dialog_select_camera, (dialog, which) -> startCamera());
             builder.create().show();
+            mPlayAudio.setVisibility(View.INVISIBLE);
+        }
+        if (v == mPlayAudio){
+            if(!getTranslatedText().equals(getPreviousText())){
+
+                Log.i(TAG, "onClick: Play Audio -> if Condition = true");
+
+                if(ttsService != null){
+                    ttsService = null;
+                }
+                setPreviousText(getTranslatedText());
+                ttsService = new TTS(this, audioPlayerListener, isNativeToForeignConversion,
+                        mNativeLanguageModel, mForeignLanguageModel, getTranslatedText());
+                mImageProgress.setVisibility(View.VISIBLE);
+                ttsService.toggleTTS();
+            }else{
+                mImageProgress.setVisibility(View.VISIBLE);
+                ttsService.toggleTTS();
+            }
         }
     }
 
@@ -494,10 +557,12 @@ public class ImageTranslationActivity extends AppCompatActivity implements View.
             if (activity != null && !activity.isFinishing()) {
                 TextView imageDetail = activity.findViewById(R.id.image_details);
                 ProgressBar mImageResultProgress = activity.findViewById(R.id.pg_img_details);
+                ImageButton mPlayAudio = activity.findViewById(R.id.btn_play_audio_from_img);
 
+                activity.setTranslatedText(translatedText);
                 mImageResultProgress.setVisibility(View.INVISIBLE);
                 imageDetail.setText(translatedText);
-
+                mPlayAudio.setVisibility(View.VISIBLE);
             }
         }
     }
@@ -511,5 +576,21 @@ public class ImageTranslationActivity extends AppCompatActivity implements View.
         if(isConnected && (connectionAlert != null) ){
             connectionAlert.dismiss();
         }
+    }
+
+    public String getPreviousText() {
+        return previousText;
+    }
+
+    public void setPreviousText(String previousText) {
+        this.previousText = previousText;
+    }
+
+    public String getTranslatedText() {
+        return translatedText;
+    }
+
+    public void setTranslatedText(String translatedText) {
+        this.translatedText = translatedText;
     }
 }
